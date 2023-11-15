@@ -1,0 +1,16 @@
+{
+  "name": "birneylab/flexlmm",
+  "homePage": "https://github.com/birneylab/flexlmm",
+  "repos": {
+    "https://github.com/nf-core/modules.git": {
+      "modules": {
+          "custom/dumpsoftwareversions": {
+            "branch": "master",
+            "git_sha": "05c280924b6c768d484c7c443dad5e605c4ff4b4",
+            "installed_by": ["modules"]
+          }
+        }
+      }
+    }
+  }
+}
