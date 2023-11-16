@@ -22,6 +22,14 @@
           "fa_icon": "fas fa-file-csv",
           "description": "Path to comma-separated file containing information about the genetic variants to be considered."
         },
+        "vcf": {
+          "type": "string",
+          "fa_icon": "fas fa-file-alt",
+          "description": "VCF(.gz) file with samples overlapping with the ones in `input`",
+          "help_text": "This is needed for extracting the sample genotypes at the variants of interest.",
+          "format": "file-path",
+          "pattern": "^\\S+.vcf(.gz)?$"
+        },
         "outdir": {
           "type": "string",
           "format": "directory-path",
