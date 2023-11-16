@@ -98,7 +98,7 @@ class RowChecker:
         if len(row[self._second_col]) <= 0:
             raise AssertionError("The region start column is required.")
 
-        if !(str(row[self._second_col]).isnumeric() and int(row[self._second_col]) > 0):
+        if not (str(row[self._second_col]).isnumeric() and int(row[self._second_col]) > 0):
             raise AssertionError(
                 "The region start entries must be integers greather than 0",
                 f"Error detected for var_id: {row[self._var_col]}, region_start: {row[self._second_col]}"
@@ -110,7 +110,7 @@ class RowChecker:
         if len(row[self._third_col]) <= 0:
             raise AssertionError("The region end column is requries.")
 
-        if !(str(row[self._third_col]).isnumeric() and int(row[self._third_col]) > int(row[self._second_col])):
+        if not (str(row[self._third_col]).isnumeric() and int(row[self._third_col]) > int(row[self._second_col])):
             raise AssertionError(
                 "The region end entries must be integers greather than region_start",
                 f"Error detected for var_id: {row[self._var_col]}, region_start: {row[self._second_col]}, region_end: {row[self._third_col]}"
@@ -184,7 +184,7 @@ def check_samplesheet(file_in, file_out):
             SAMPLE,SAMPLE.cram,SAMPLE.cram.crai
     """
     required_columns = {"var_id", "chr", "region_start", "region_end"}
-    optional_columns = {}
+    optional_columns = set()
     # See https://docs.python.org/3.9/library/csv.html#id3 to read up on
     # `newline=""`.
     with file_in.open(newline="") as in_handle:
@@ -207,7 +207,7 @@ def check_samplesheet(file_in, file_out):
             except AssertionError as error:
                 logger.critical(f"{str(error)} on line {i + 2}.")
                 sys.exit(1)
-        checker.validate_unique_samples()
+        checker.validate_unique_var()
     header = list(required_columns | optional_columns)
     # See https://docs.python.org/3.9/library/csv.html#id3 to read up on
     # `newline=""`.
