@@ -65,7 +65,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 workflow VAREXPLORE {
     versions = Channel.empty ()
     
-    //INPUT_CHECK ( file(params.input) )
+    INPUT_CHECK ( file(params.input) )
     //INPUT_CHECK.out.reads.set { reads }
 
     PREPROCESSING ()

@@ -1,6 +1,6 @@
 workflow PREPROCESSING {
     take:
-    vcf                    // value: [mandatory] vcf_file
+    //vcf                    // value: [mandatory] vcf_file
 
     main:
     versions = Channel.empty()
