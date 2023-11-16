@@ -41,13 +41,13 @@ WorkflowMain.initialise(workflow, params, log)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { FLEXLMM } from './workflows/flexlmm'
+include { VAREXPLORE } from './workflows/varexplore'
 
 //
 // WORKFLOW: Run main birneylab/stitchimpute analysis pipeline
 //
 workflow BIRNEYLAB_FLEXLMM {
-    FLEXLMM ()
+    VAREXPLORE ()
 }
 
 /*
@@ -61,7 +61,7 @@ workflow BIRNEYLAB_FLEXLMM {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    BIRNEYLAB_FLEXLMM ()
+    BIRNEYLAB_VAREXPLORE ()
 }
 
 /*
