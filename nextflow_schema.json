@@ -14,9 +14,13 @@
       "properties": {
         "input": {
           "type": "string",
-          "default": "None",
           "description": "Path to comma-separated file containing information about the samples in the experiment.",
           "fa_icon": "fas fa-file-csv"
+        },
+        "variant_table": {
+          "type": "string",
+          "fa_icon": "fas fa-file-csv",
+          "description": "Path to comma-separated file containing information about the genetic variants to be considered."
         },
         "outdir": {
           "type": "string",

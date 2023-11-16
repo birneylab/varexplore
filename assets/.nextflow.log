@@ -1,1 +1,0 @@
-Sept-07 11:14:33.875 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf -profile test,medaka,stitch,docker --outdir /Users/saul/test/out -work-dir /tmp/nextflow/work
