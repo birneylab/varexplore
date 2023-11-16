@@ -5,7 +5,7 @@
 import nextflow.Nextflow
 import groovy.text.SimpleTemplateEngine
 
-class WorkflowFlexlmm {
+class WorkflowVarexplore {
 
     //
     // Check and validate parameters
@@ -13,9 +13,6 @@ class WorkflowFlexlmm {
     public static void initialise(params, log) {
         if (!params.vcf) {
             Nextflow.error "Vcf file not specified with e.g. '--vcf in.vcf.gz' or via a detectable config file."
-        }
-        if (!params.pheno) {
-            Nextflow.error "Phenotype file not specified with e.g. '--pheno myfile.txt' or via a detectable config file."
         }
     }
 

@@ -1,15 +1,19 @@
 {
-  "name": "birneylab/flexlmm",
-  "homePage": "https://github.com/birneylab/flexlmm",
+  "name": "birneylab/varexplore",
+  "homePage": "https://github.com/birneylab/varexplore",
   "repos": {
     "https://github.com/nf-core/modules.git": {
       "modules": {
+        "nf-core": {
           "custom/dumpsoftwareversions": {
             "branch": "master",
-            "git_sha": "05c280924b6c768d484c7c443dad5e605c4ff4b4",
+            "git_sha": "bba7e362e4afead70653f84d8700588ea28d0f9e",
             "installed_by": ["modules"]
           }
         }
+      },
+      "subworkflows": {
+        "nf-core": {}
       }
     }
   }

@@ -1,11 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    birneylab/flexlmm
+    birneylab/varexplore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Started September 2023 as a birneylab pipeline using the nf-core template
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/birneylab/stitchimpute
+    Github : https://github.com/birneylab/varexplore
 ----------------------------------------------------------------------------------------
 */
 
@@ -46,7 +44,7 @@ include { VAREXPLORE } from './workflows/varexplore'
 //
 // WORKFLOW: Run main birneylab/stitchimpute analysis pipeline
 //
-workflow BIRNEYLAB_FLEXLMM {
+workflow BIRNEYLAB_VAREXPLORE {
     VAREXPLORE ()
 }
 

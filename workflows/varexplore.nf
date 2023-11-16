@@ -13,7 +13,7 @@ def summary_params = paramsSummaryMap(workflow)
 // Print parameter summary log to screen
 log.info logo + paramsSummaryLog(workflow) + citation
 
-WorkflowFLexlmm.initialise(params, log)
+WorkflowVarexplore.initialise(params, log)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -21,11 +21,15 @@ WorkflowFLexlmm.initialise(params, log)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-def checkPathParamList = [params.vcf]
+def checkPathParamList = [
+    params.input,
+    params.variant_table,
+    params.vcf
+]
 
 for (param in checkPathParamList) if (param) file(param, checkIfExists: true)
 
-def vcf   = file(params.vcf)
+def vcf = file(params.vcf)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,6 +41,7 @@ def vcf   = file(params.vcf)
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 
+include { INPUT_CHECK   } from '../subworkflows/local/input_check'
 include { PREPROCESSING } from '../subworkflows/local/preprocessing.nf'
 
 /*
@@ -59,10 +64,14 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 
 workflow VAREXPLORE {
     versions = Channel.empty ()
+    
+    //INPUT_CHECK ( file(params.input) )
+    //INPUT_CHECK.out.reads.set { reads }
 
     PREPROCESSING ()
 
     versions = versions.mix( PREPROCESSING.out.versions )
+    //versions = versions.mix( INPUT_CHECK.out.versions )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         versions.unique().collectFile(name: 'collated_versions.yml')
