@@ -69,8 +69,9 @@ workflow VAREXPLORE {
     
     INPUT_CHECK ( input, variant_table )
     INPUT_CHECK.out.reads.set { reads }
+    INPUT_CHECK.out.vars .set { vars  }
 
-    reads.view()
+    vars.view()
 
     PREPROCESSING ()
 

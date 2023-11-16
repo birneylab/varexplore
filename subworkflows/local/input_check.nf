@@ -18,9 +18,14 @@ workflow INPUT_CHECK {
         .set { reads }
 
     VARIANT_TABLE_CHECK ( variant_table )
+        .csv
+        .splitCsv ( header:true, sep:',' )
+        .map { create_variant_channel(it) }
+        .set { vars }
 
     emit:
     reads                                     // channel: [ meta, cram, crai ]
+    vars                                      // channel: [ meta, chr, start, end ]
     versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
@@ -56,4 +61,19 @@ def create_cram_channel(LinkedHashMap row) {
     }
     cram_meta = [ meta, cram, crai ]
     return cram_meta
+}
+
+// Function to get list of [ meta, [ chr, start, end ] ]
+def create_variant_channel(LinkedHashMap row) {
+
+    chr          = row.chr
+    region_start = row.region_start
+    region_end   = row.region_end
+
+    // create meta map
+    def meta    = [:]
+    meta.id     = row.var_id
+
+    var_meta = [ meta, chr, region_start, region_end ]
+    return var_meta
 }
