@@ -2,7 +2,8 @@
 // Check input samplesheet and get read channels
 //
 
-include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
+include { SAMPLESHEET_CHECK   } from '../../modules/local/samplesheet_check'
+include { VARIANT_TABLE_CHECK } from '../../modules/local/variant_table_check'
 
 workflow INPUT_CHECK {
     take:
@@ -15,6 +16,8 @@ workflow INPUT_CHECK {
         .splitCsv ( header:true, sep:',' )
         .map { create_cram_channel(it) }
         .set { reads }
+
+    VARIANT_TABLE_CHECK ( variant_table )
 
     emit:
     reads                                     // channel: [ meta, cram, crai ]

@@ -1,5 +1,5 @@
 sample,cram,crai,group
-s1,${projectDir}/assets/test_data/cram/s1.cram,${projectDir}/assets/test_data/cram/s1.crai,g1
-s2,${projectDir}/assets/test_data/cram/s2.cram,${projectDir}/assets/test_data/cram/s2.crai,g1
-s3,${projectDir}/assets/test_data/cram/s3.cram,${projectDir}/assets/test_data/cram/s3.crai,g2
-s4,${projectDir}/assets/test_data/cram/s4.cram,${projectDir}/assets/test_data/cram/s4.crai,g2
+s1,${projectDir}/assets/test_data/cram/s1.cram,${projectDir}/assets/test_data/cram/s1.cram.crai,g1
+s2,${projectDir}/assets/test_data/cram/s2.cram,${projectDir}/assets/test_data/cram/s2.cram.crai,g1
+s3,${projectDir}/assets/test_data/cram/s3.cram,${projectDir}/assets/test_data/cram/s3.cram.crai,g2
+s4,${projectDir}/assets/test_data/cram/s4.cram,${projectDir}/assets/test_data/cram/s4.cram.crai,g2

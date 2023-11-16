@@ -25,40 +25,35 @@ class RowChecker:
             The order of rows is maintained.
     """
 
-    VALID_CRAM_FORMATS = [".cram"]
-    VALID_CRAI_FORMATS = [".crai"]
-
     def __init__(
         self,
-        sample_col="sample",
-        first_col="cram",
-        second_col="crai",
-        third_col="group",
+        var_col="var_id",
+        first_col="chr",
+        second_col="region_start",
+        third_col="region_end",
         **kwargs,
     ):
         """
         Initialize the row checker with the expected column names.
 
         Args:
-            sample_col (str): The name of the column that contains the sample
-                name (default "sample").
-            first_col (str): The name of the column that contains the cram file
-                path (default "cram").
-            second_col (str): The name of the column that contains the crai
-                file (default "crai").
-            third_col (str): The name of the new column that will be inserted
-                if not present and records how samples are to be grouped.
-
+            var_col (str): The name of the column that contains the variant ID
+                name (default "var_id").
+            first_col (str): The name of the column that contains the chromosome ID
+                path (default "chr").
+            second_col (str): The name of the column that contains the starting position of the region of interest (default "region_start").
+            third_col (str): The name of the column that contains the ending position of the region of interest (default "region_end").
         """
         super().__init__(**kwargs)
-        self._sample_col = sample_col
+        self._var_col = var_col
         self._first_col = first_col
         self._second_col = second_col
         self._third_col = third_col
         self._seen = {
-            self._sample_col: set(),
+            self._var_col: set(),
             self._first_col: set(),
             self._second_col: set(),
+            self._third_col: set(),
         }
         self.modified = []
 
@@ -71,87 +66,63 @@ class RowChecker:
                 that row (values).
 
         """
-        self._validate_sample(row)
+        self._validate_var(row)
         self._validate_first(row)
         self._validate_second(row)
         self._validate_third(row)
-        self._seen[self._sample_col].add(row[self._sample_col])
+        self._seen[self._var_col].add(row[self._var_col])
         self._seen[self._first_col].add(row[self._first_col])
         self._seen[self._second_col].add(row[self._second_col])
+        self._seen[self._third_col].add(row[self._third_col])
         self.modified.append(row)
 
-    def _validate_sample(self, row):
+    def _validate_var(self, row):
         """
         Assert that the sample name exists and convert spaces to underscores.
         """
 
-        if len(row[self._sample_col]) <= 0:
-            raise AssertionError("Sample input is required.")
+        if len(row[self._var_col]) <= 0:
+            raise AssertionError("Variant ID is required.")
         # Sanitize samples slightly.
-        row[self._sample_col] = row[self._sample_col].replace(" ", "_")
+        row[self._var_col] = row[self._var_col].replace(" ", "_")
 
     def _validate_first(self, row):
-        """Assert that the cram entry is non-empty and has the right format."""
+        """Check that the chromosome ID column is present"""
 
         if len(row[self._first_col]) <= 0:
-            raise AssertionError("The cram file is required.")
-        self._validate_cram_format(row[self._first_col])
+            raise AssertionError("The chromosome ID is required.")
 
     def _validate_second(self, row):
-        """Assert that the crai entry is non-empty and has the right format"""
+        """Check that the region start column is present"""
 
-        if len(row[self._first_col]) <= 0:
-            raise AssertionError("The crai file is required.")
-        self._validate_crai_format(row[self._second_col])
+        if len(row[self._second_col]) <= 0:
+            raise AssertionError("The region start column is required.")
+
+        if !(str(row[self._second_col]).isnumeric() and int(row[self._second_col]) > 0):
+            raise AssertionError(
+                "The region start entries must be integers greather than 0",
+                f"Error detected for var_id: {row[self._var_col]}, region_start: {row[self._second_col]}"
+            )
 
     def _validate_third(self, row):
-        """Create the group entry if absent"""
+        """Check that the region start column is present"""
 
-        if self._third_col not in row:
-            row[self._third_col] = "all_samples"
+        if len(row[self._third_col]) <= 0:
+            raise AssertionError("The region end column is requries.")
 
-    def _validate_cram_format(self, filename):
-        """
-        Assert that a given filename has one of the expected cram extensions.
-        """
-
-        if not any(
-            filename.endswith(extension)
-            for extension in self.VALID_CRAM_FORMATS
-        ):
+        if !(str(row[self._third_col]).isnumeric() and int(row[self._third_col]) > int(row[self._second_col])):
             raise AssertionError(
-                f"The cram file has an unrecognized extension: {filename}\n"
-                f"It should be one of: {', '.join(self.VALID_CRAM_FORMATS)}"
+                "The region end entries must be integers greather than region_start",
+                f"Error detected for var_id: {row[self._var_col]}, region_start: {row[self._second_col]}, region_end: {row[self._third_col]}"
             )
 
-    def _validate_crai_format(self, filename):
+    def validate_unique_var(self):
         """
-        Assert that a given filename has one of the expected crai extensions.
-        """
-
-        if not any(
-            filename.endswith(extension)
-            for extension in self.VALID_CRAI_FORMATS
-        ):
-            raise AssertionError(
-                f"The crai file has an unrecognized extension: {filename}\n"
-                f"It should be one of: {', '.join(self.VALID_CRAI_FORMATS)}"
-            )
-
-    def validate_unique_samples(self):
-        """
-        Assert that the sample name, cram file, and crai file are all unique.
+        Assert that the sample namess are all unique.
         """
 
-        if len(self._seen[self._sample_col]) != len(self.modified):
-            raise AssertionError("Sample names must be unique.")
-
-        if len(self._seen[self._first_col]) != len(self.modified):
-            raise AssertionError("Cram filenames must be unique.")
-
-        if len(self._seen[self._second_col]) != len(self.modified):
-            raise AssertionError("Crai filenames must be unique.")
-
+        if len(self._seen[self._var_col]) != len(self.modified):
+            raise AssertionError("Variant IDs must be unique.")
 
 def read_head(handle, num_lines=10):
     """
@@ -212,8 +183,8 @@ def check_samplesheet(file_in, file_out):
             SAMPLE,SAMPLE.cram,SAMPLE.cram.crai
             SAMPLE,SAMPLE.cram,SAMPLE.cram.crai
     """
-    required_columns = {"sample", "cram", "crai"}
-    optional_columns = {"group"}
+    required_columns = {"var_id", "chr", "region_start", "region_end"}
+    optional_columns = {}
     # See https://docs.python.org/3.9/library/csv.html#id3 to read up on
     # `newline=""`.
     with file_in.open(newline="") as in_handle:

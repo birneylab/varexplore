@@ -29,7 +29,9 @@ def checkPathParamList = [
 
 for (param in checkPathParamList) if (param) file(param, checkIfExists: true)
 
-def vcf = file(params.vcf)
+def input         = file(params.input)
+def variant_table = file(params.variant_table)
+def vcf           = file(params.vcf)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,8 +67,10 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 workflow VAREXPLORE {
     versions = Channel.empty ()
     
-    INPUT_CHECK ( file(params.input) )
-    //INPUT_CHECK.out.reads.set { reads }
+    INPUT_CHECK ( input, variant_table )
+    INPUT_CHECK.out.reads.set { reads }
+
+    reads.view()
 
     PREPROCESSING ()
 
