@@ -1,4 +1,5 @@
-include { SAMTOOLS_VIEW as FILTER_CRAM } from '../../modules/nf-core/samtools/view'                                                                                                                                                                                              
+include { SAMTOOLS_VIEW as FILTER_CRAM                } from '../../modules/nf-core/samtools/view'                                                                                                                                                                                              
+include { SAMTOOLS_INDEX as INDEX_SINGLE_SAMPLE_CRAMS } from '../../modules/nf-core/samtools/index'                                                                                                                                                                                              
 
 workflow PREPROCESSING {
     take:
@@ -22,18 +23,18 @@ workflow PREPROCESSING {
         meta.region  = "${chr}:${start}-${end}"
         [ meta, cram, crai ]
     }
-    .filter { meta.sample == "s1" }
     .set { filter_cram_in_ch }
     FILTER_CRAM ( filter_cram_in_ch, [ [ id:null ], fasta], [] )
+    INDEX_SINGLE_SAMPLE_CRAMS ( FILTER_CRAM.out.cram )
     FILTER_CRAM.out.cram
-    .view()
-
-    reads
-    .map { meta, cram, crai -> [ [ group : meta.group ], cram, crai ] }
+    .join ( INDEX_SINGLE_SAMPLE_CRAMS.out.crai , by: 0, failOnDuplicate: true, failOnMismatch: true)
+    .map { meta, cram, crai -> [ [ group : meta.group, variant: meta.variant, region: meta.region ], cram, crai ] }
     .groupTuple ()
+    .view()
     .set { grouped_crams }
 
-    //versions = versions.mix( INPUT_CHECK.out.versions )
+    versions = versions.mix( FILTER_CRAM              .out.versions )
+    versions = versions.mix( INDEX_SINGLE_SAMPLE_CRAMS.out.versions )
 
     emit:
     versions              // channel: [ versions.yml ]
