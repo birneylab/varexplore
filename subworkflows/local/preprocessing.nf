@@ -42,7 +42,7 @@ workflow PREPROCESSING {
     .map {
         meta, samples, crams ->
         def new_meta     = meta.clone()
-        new_meta.samples = samples
+        new_meta.group_samples_slicer = samples.sort().join(",")
         [ new_meta, crams ]
     }
     .set { grouped_crams }
@@ -55,22 +55,33 @@ workflow PREPROCESSING {
     vcf_ch
     .join ( BCFTOOLS_INDEX.out.csi, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .combine ( grouped_crams )
-    .first()
     .map {
         meta1, vcf, csi, meta2, crams ->
         [ meta2, vcf, csi ]
     }
-    .set { vcf_groups_ch }
-    EXTRACT_POSSIBLE_GT ( vcf_groups_ch, [], [], [] )
+    .set { vcf_groups }
+    EXTRACT_POSSIBLE_GT ( vcf_groups, [], [], [] )
     EXTRACT_POSSIBLE_GT.out.output
     .splitText ( elem: 1 )
     .unique ()
-    .map { meta, gt -> [ meta, gt.trim() ]}
+    .map {
+        meta, gt ->
+        [ meta, gt.trim() ]
+    }
     .set { possible_gt }
-    vcf_groups_ch
-    .join ( possible_gt, by: 0, failOnMismatch: true )
+    vcf_groups
+    .combine ( possible_gt, by: 0 )
+    .map {
+        meta, vcf, csi, gt ->
+        def new_meta    = meta.clone()
+        new_meta.gt     = gt
+        new_meta.id     = "variant_${meta.variant}_group_${meta.group}_gt_${gt.replaceAll('/', '-').replaceAll('\\.', 'miss')}"
+        [ new_meta, vcf, csi ]
+    }
+    .set { vcf_groups_gts }
+    EXTRACT_SAMPLES_BY_GT ( vcf_groups_gts, [], [], [] )
+    EXTRACT_SAMPLES_BY_GT.out.output
     .view()
-    //EXTRACT_SAMPLES_BY_GT ( vcf_groups_ch, [], [], [] )
 
     //versions = versions.mix( FILTER_CRAM              .out.versions )
     //versions = versions.mix( SAMTOOLS_MERGE           .out.versions )
