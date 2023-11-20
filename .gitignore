@@ -5,4 +5,4 @@ results/
 .DS_Store
 testing/
 testing*
-*.pyc
+*.code-workspace

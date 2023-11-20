@@ -24,14 +24,17 @@ WorkflowVarexplore.initialise(params, log)
 def checkPathParamList = [
     params.input,
     params.variant_table,
-    params.vcf
+    params.vcf,
+    params.fasta,
 ]
 
-for (param in checkPathParamList) if (param) file(param, checkIfExists: true)
+for ( param in checkPathParamList ) if ( param ) file ( param, checkIfExists: true )
 
-def input         = file(params.input)
-def variant_table = file(params.variant_table)
-def vcf           = file(params.vcf)
+def input         = file ( params.input         )
+def variant_table = file ( params.variant_table )
+def vcf           = file ( params.vcf           )
+
+def fasta         = params.fasta ? file ( params.fasta ) : []
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,12 +74,10 @@ workflow VAREXPLORE {
     INPUT_CHECK.out.reads.set { reads }
     INPUT_CHECK.out.vars .set { vars  }
 
-    vars.view()
-
-    PREPROCESSING ()
+    PREPROCESSING ( reads, vars, vcf, fasta )
 
     versions = versions.mix( PREPROCESSING.out.versions )
-    //versions = versions.mix( INPUT_CHECK.out.versions )
+    versions = versions.mix( INPUT_CHECK.out.versions )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         versions.unique().collectFile(name: 'collated_versions.yml')
