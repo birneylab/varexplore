@@ -15,38 +15,10 @@ workflow PREPROCESSING {
     versions = Channel.empty()
 
     reads
-    .combine ( vars )
-    .map {
-        meta1, cram, crai, meta2, variant_id, chr, start, end ->
-        def meta = [:]
-        meta.sample  = meta1.id
-        meta.variant = meta2.id
-        meta.group   = meta1.group
-        meta.id      = "variant_${meta.variant}_sample_${meta.sample}"
-        meta.region  = "${chr}:${start}-${end}"
-        [ meta, cram, crai ]
-    }
-    .set { filter_cram_in_ch }
-    FILTER_CRAM ( filter_cram_in_ch, [ [ id: null ], fasta ], [] )
-    FILTER_CRAM.out.cram
-    .map {
-        meta, cram ->
-        def new_meta     = [:]
-        new_meta.id      = "variant_${meta.variant}_group_${meta.group}"
-        new_meta.variant = meta.variant
-        new_meta.group   = meta.group
-        new_meta.region  = meta.region
-        [ new_meta, meta.sample, cram ]
-    }
+    .map { meta, cram, crai -> [ meta.group, meta.id ] }
     .groupTuple ()
-    .map {
-        meta, samples, crams ->
-        def new_meta     = meta.clone()
-        new_meta.group_samples_slicer = samples.sort().join(",")
-        [ new_meta, crams ]
-    }
-    .set { grouped_crams }
-    SAMTOOLS_MERGE ( grouped_crams, [ [ id: null ], fasta], [ [ id: null ], [] ] )
+    .map { group, samples -> [ group, samples.join(",") ] }
+    .set { samples_per_group }
 
     Channel.fromPath( vcf )
     .map { [ [ id: null ], it ] }
@@ -54,10 +26,21 @@ workflow PREPROCESSING {
     BCFTOOLS_INDEX ( vcf_ch )
     vcf_ch
     .join ( BCFTOOLS_INDEX.out.csi, by: 0, failOnDuplicate: true, failOnMismatch: true )
-    .combine ( grouped_crams )
+    .combine ( samples_per_group )
+    .combine ( vars )
     .map {
-        meta1, vcf, csi, meta2, crams ->
-        [ meta2, vcf, csi ]
+        meta1, vcf, csi, group, samples, meta2, variant_id, chr, start, end ->
+        def meta = [
+            id     : "group_${group}_variant_${variant_id}",
+            group  : group,
+            samples: samples,
+            variant: variant_id,
+            chr    : chr,
+            start  : start,
+            end    : end,
+            region : "${chr}:${start}-${end}",
+        ]
+        [ meta, vcf, csi ]
     }
     .set { vcf_groups }
     EXTRACT_POSSIBLE_GT ( vcf_groups, [], [], [] )
@@ -75,13 +58,66 @@ workflow PREPROCESSING {
         meta, vcf, csi, gt ->
         def new_meta    = meta.clone()
         new_meta.gt     = gt
-        new_meta.id     = "variant_${meta.variant}_group_${meta.group}_gt_${gt.replaceAll('/', '-').replaceAll('\\.', 'miss')}"
+        new_meta.id     = "group_${meta.group}_variant_${meta.variant}_gt_${gt.replaceAll('/', '-').replaceAll('\\.', 'miss')}"
         [ new_meta, vcf, csi ]
     }
     .set { vcf_groups_gts }
     EXTRACT_SAMPLES_BY_GT ( vcf_groups_gts, [], [], [] )
+
+    reads
+    .combine ( vars )
+    .map {
+        meta1, cram, crai, meta2, variant_id, chr, start, end ->
+        def meta = [
+            id     : "sample_${meta1.id}_variant_${variant_id}",
+            group  : meta1.group,
+            sample : meta1.id,
+            variant: variant_id,
+            chr    : chr,
+            start  : start,
+            end    : end,
+            region: "${chr}:${start}-${end}",
+        ]
+        [ meta, cram, crai ]
+    }
+    .set { filter_cram_in_ch }
+    FILTER_CRAM ( filter_cram_in_ch, [ [ id: null ], fasta ], [] )
+    FILTER_CRAM.out.cram
+    .map { 
+        meta, cram ->
+        def merge_col = [ meta.group, meta.variant ]
+        [ merge_col, meta, cram ] 
+    }
+    .set { filtered_crams }
+
+
     EXTRACT_SAMPLES_BY_GT.out.output
+    .splitText ( elem: 1 )
+    .map { meta, sample -> [ meta, sample.trim() ] }
+    .groupTuple ()
+    .map {
+        meta, samples ->
+        def new_meta = meta.clone()
+        // before it was all the samples in group, overwrite with only the ones with
+        // the right GT
+        new_meta.samples = samples
+        def merge_col = [ meta.group, meta.variant ]
+        [ merge_col, new_meta ]
+    }
+    .combine ( filtered_crams, by: 0 )
+    .map {
+        merge_col, meta1, meta2, cram ->
+        assert meta1.group   == meta2.group
+        assert meta1.variant == meta2.variant
+        assert meta1.chr     == meta2.chr
+        assert meta1.start   == meta2.start
+        assert meta1.end     == meta2.end
+        assert meta1.region  == meta2.region
+        [ meta1, cram ]
+    }
     .view()
+    //SAMTOOLS_MERGE ( grouped_crams, [ [ id: null ], fasta], [ [ id: null ], [] ] )
+
 
     //versions = versions.mix( FILTER_CRAM              .out.versions )
     //versions = versions.mix( SAMTOOLS_MERGE           .out.versions )
