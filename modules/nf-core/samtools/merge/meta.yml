@@ -1,7 +1,7 @@
-name: samtools_index
-description: Index SAM/BAM/CRAM file
+name: samtools_merge
+description: Merge BAM or CRAM file
 keywords:
-  - index
+  - merge
   - bam
   - sam
   - cram
@@ -21,37 +21,63 @@ input:
       description: |
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
-  - bam:
+  - input_files:
       type: file
-      description: BAM/CRAM/SAM file
+      description: BAM/CRAM file
       pattern: "*.{bam,cram,sam}"
+  - meta2:
+      type: map
+      description: |
+        Groovy Map containing reference information
+        e.g. [ id:'genome' ]
+  - fasta:
+      type: file
+      description: Reference file the CRAM was created with (optional)
+      pattern: "*.{fasta,fa}"
+  - meta3:
+      type: map
+      description: |
+        Groovy Map containing reference information
+        e.g. [ id:'genome' ]
+  - fai:
+      type: file
+      description: Index of the reference file the CRAM was created with (optional)
+      pattern: "*.fai"
 output:
   - meta:
       type: map
       description: |
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
-  - bai:
+  - bam:
       type: file
-      description: BAM/CRAM/SAM index file
-      pattern: "*.{bai,crai,sai}"
-  - crai:
+      description: BAM file
+      pattern: "*.{bam}"
+  - cram:
       type: file
-      description: BAM/CRAM/SAM index file
-      pattern: "*.{bai,crai,sai}"
-  - csi:
-      type: file
-      description: CSI index file
-      pattern: "*.{csi}"
+      description: CRAM file
+      pattern: "*.{cram}"
   - versions:
       type: file
       description: File containing software versions
       pattern: "versions.yml"
+  - csi:
+      type: file
+      description: BAM index file (optional)
+      pattern: "*.csi"
+  - crai:
+      type: file
+      description: CRAM index file (optional)
+      pattern: "*.crai"
 authors:
   - "@drpatelh"
-  - "@ewels"
+  - "@yuukiiwa "
   - "@maxulysse"
+  - "@FriederikeHanssen"
+  - "@ramprasadn"
 maintainers:
   - "@drpatelh"
-  - "@ewels"
+  - "@yuukiiwa "
   - "@maxulysse"
+  - "@FriederikeHanssen"
+  - "@ramprasadn"

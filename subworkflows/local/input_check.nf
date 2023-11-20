@@ -66,6 +66,7 @@ def create_cram_channel(LinkedHashMap row) {
 // Function to get list of [ meta, [ chr, start, end ] ]
 def create_variant_channel(LinkedHashMap row) {
 
+    variant_id   = row.var_id
     chr          = row.chr
     region_start = row.region_start
     region_end   = row.region_end
@@ -74,6 +75,6 @@ def create_variant_channel(LinkedHashMap row) {
     def meta    = [:]
     meta.id     = row.var_id
 
-    var_meta = [ meta, chr, region_start, region_end ]
+    var_meta = [ meta, variant_id, chr, region_start, region_end ]
     return var_meta
 }
