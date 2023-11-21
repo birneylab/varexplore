@@ -46,8 +46,9 @@ def fasta         = params.fasta ? file ( params.fasta ) : []
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 
-include { INPUT_CHECK   } from '../subworkflows/local/input_check'
-include { PREPROCESSING } from '../subworkflows/local/preprocessing.nf'
+include { INPUT_CHECK     } from '../subworkflows/local/input_check'
+include { PREPROCESSING   } from '../subworkflows/local/preprocessing.nf'
+include { VARIANT_CALLING } from '../subworkflows/local/variant_calling.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,10 +75,12 @@ workflow VAREXPLORE {
     INPUT_CHECK.out.reads.set { reads }
     INPUT_CHECK.out.vars .set { vars  }
 
-    PREPROCESSING ( reads, vars, vcf, fasta )
+    PREPROCESSING   ( reads, vars, vcf, fasta )
+    VARIANT_CALLING ( PREPROCESSING.out.merged_crams, fasta )
 
-    versions = versions.mix( PREPROCESSING.out.versions )
-    versions = versions.mix( INPUT_CHECK.out.versions )
+    versions = versions.mix( INPUT_CHECK.out.versions     )
+    versions = versions.mix( PREPROCESSING.out.versions   )
+    versions = versions.mix( VARIANT_CALLING.out.versions )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         versions.unique().collectFile(name: 'collated_versions.yml')

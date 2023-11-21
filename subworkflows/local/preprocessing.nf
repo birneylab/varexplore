@@ -1,10 +1,10 @@
-include { SAMTOOLS_VIEW as FILTER_CRAM                } from '../../modules/nf-core/samtools/view'
-include { SAMTOOLS_MERGE                              } from '../../modules/nf-core/samtools/merge'
-include { BCFTOOLS_INDEX                              } from '../../modules/nf-core/bcftools/index'
-include { BCFTOOLS_QUERY as EXTRACT_SAMPLES_BY_GT     } from '../../modules/nf-core/bcftools/query'
-include { BCFTOOLS_QUERY as EXTRACT_POSSIBLE_GT       } from '../../modules/nf-core/bcftools/query'
-include { SAMTOOLS_REHEADER as RENAME_SM_TAG          } from '../../modules/nf-core/samtools/reheader'  
-include { SAMTOOLS_INDEX                              } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_VIEW as FILTER_CRAM            } from '../../modules/nf-core/samtools/view'
+include { SAMTOOLS_MERGE                          } from '../../modules/nf-core/samtools/merge'
+include { BCFTOOLS_INDEX                          } from '../../modules/nf-core/bcftools/index'
+include { BCFTOOLS_QUERY as EXTRACT_SAMPLES_BY_GT } from '../../modules/nf-core/bcftools/query'
+include { BCFTOOLS_QUERY as EXTRACT_POSSIBLE_GT   } from '../../modules/nf-core/bcftools/query'
+include { SAMTOOLS_REHEADER as RENAME_SM_TAG      } from '../../modules/nf-core/samtools/reheader'  
+include { SAMTOOLS_INDEX                          } from '../../modules/nf-core/samtools/index'
 
 workflow PREPROCESSING {
     take:
@@ -97,7 +97,7 @@ workflow PREPROCESSING {
     .map {
         meta, sample ->
         def new_meta = meta.clone()
-        new_meta.samples = null // this was referring to the whole group, not GT specific
+        new_meta.remove ( "samples" ) // this was referring to the whole group, not GT specific
         def sample_trimmed = sample.trim()
         def merge_col = [ meta.group, sample_trimmed, meta.variant ]
         [ merge_col, sample_trimmed, new_meta ]
@@ -108,14 +108,22 @@ workflow PREPROCESSING {
     .map {
         meta, samples, crams ->
         def new_meta = meta.clone()
-        new_meta.samples = samples
+        new_meta.samples = samples.sort()
         [ new_meta, crams ]
     }
     .set { crams_to_merge }
     SAMTOOLS_MERGE ( crams_to_merge, [ [ id: null ], fasta ], [ [ id: null ], [] ] )
     RENAME_SM_TAG ( SAMTOOLS_MERGE.out.cram )
-    SAMTOOLS_INDEX ( RENAME_SM_TAG.out.cram )
     RENAME_SM_TAG.out.cram
+    .map {
+        meta, cram ->
+        def new_meta = meta.clone()
+        new_meta.remove ( "samples" )
+        [ new_meta, cram ]
+    }
+    .set { renamed_crams }
+    SAMTOOLS_INDEX ( renamed_crams )
+    renamed_crams
     .join( SAMTOOLS_INDEX.out.crai, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .set { merged_crams }
 
