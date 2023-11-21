@@ -30,11 +30,16 @@ def checkPathParamList = [
 
 for ( param in checkPathParamList ) if ( param ) file ( param, checkIfExists: true )
 
-def input         = file ( params.input         )
-def variant_table = file ( params.variant_table )
-def vcf           = file ( params.vcf           )
-
-def fasta         = params.fasta ? file ( params.fasta ) : []
+def input           = file ( params.input         )
+def variant_table   = file ( params.variant_table )
+def vcf             = file ( params.vcf           )
+def fasta           = params.fasta ? file ( params.fasta ) : []
+def ensemblvep_info = [
+    [ id:"${params.vep_cache_version}_${params.vep_genome}" ],
+    params.vep_genome,
+    params.vep_species,
+    params.vep_cache_version
+]
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,7 +88,7 @@ workflow VAREXPLORE {
         PREPROCESSING.out.fa_idx,
         PREPROCESSING.out.fa_dict,
     )
-    PREDICT_EFFECTS ( VARIANT_CALLING.out.vcf )
+    PREDICT_EFFECTS ( VARIANT_CALLING.out.vcf, ensemblvep_info )
 
     versions = versions.mix( INPUT_CHECK.out.versions     )
     versions = versions.mix( PREPROCESSING.out.versions   )

@@ -78,6 +78,31 @@
         }
       }
     },
+    "new_group_1": {
+      "title": "New Group 1",
+      "type": "object",
+      "description": "Information needed for predicting variant effects with VEP",
+      "default": "",
+      "properties": {
+        "vep_genome": {
+          "type": "string",
+          "description": "VEP genome",
+          "fa_icon": "fas fa-microscope"
+        },
+        "vep_species": {
+          "type": "string",
+          "description": "VEP species",
+          "fa_icon": "fas fa-microscope"
+        },
+        "vep_cache_version": {
+          "type": "string",
+          "description": "VEP cache version",
+          "fa_icon": "fas fa-microscope"
+        }
+      },
+      "required": ["vep_genome", "vep_species", "vep_cache_version"],
+      "fa_icon": "fas fa-microscope"
+    },
     "institutional_config_options": {
       "title": "Institutional config options",
       "type": "object",
@@ -260,6 +285,9 @@
     },
     {
       "$ref": "#/definitions/reference_genome_options"
+    },
+    {
+      "$ref": "#/definitions/new_group_1"
     },
     {
       "$ref": "#/definitions/institutional_config_options"
