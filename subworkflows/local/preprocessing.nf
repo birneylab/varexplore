@@ -4,6 +4,7 @@ include { BCFTOOLS_INDEX                              } from '../../modules/nf-c
 include { BCFTOOLS_QUERY as EXTRACT_SAMPLES_BY_GT     } from '../../modules/nf-core/bcftools/query'
 include { BCFTOOLS_QUERY as EXTRACT_POSSIBLE_GT       } from '../../modules/nf-core/bcftools/query'
 include { SAMTOOLS_REHEADER as RENAME_SM_TAG          } from '../../modules/nf-core/samtools/reheader'  
+include { SAMTOOLS_INDEX                              } from '../../modules/nf-core/samtools/index'
 
 workflow PREPROCESSING {
     take:
@@ -113,12 +114,21 @@ workflow PREPROCESSING {
     .set { crams_to_merge }
     SAMTOOLS_MERGE ( crams_to_merge, [ [ id: null ], fasta ], [ [ id: null ], [] ] )
     RENAME_SM_TAG ( SAMTOOLS_MERGE.out.cram )
-    RENAME_SM_TAG.out.cram.view()
+    SAMTOOLS_INDEX ( RENAME_SM_TAG.out.cram )
+    RENAME_SM_TAG.out.cram
+    .join( SAMTOOLS_INDEX.out.crai, by: 0, failOnDuplicate: true, failOnMismatch: true )
+    .set { merged_crams }
 
-
-    //versions = versions.mix( FILTER_CRAM              .out.versions )
-    //versions = versions.mix( SAMTOOLS_MERGE           .out.versions )
+    versions = versions.mix( BCFTOOLS_INDEX       .out.versions )
+    versions = versions.mix( EXTRACT_POSSIBLE_GT  .out.versions )
+    versions = versions.mix( EXTRACT_SAMPLES_BY_GT.out.versions )
+    versions = versions.mix( FILTER_CRAM          .out.versions )
+    versions = versions.mix( SAMTOOLS_MERGE       .out.versions )
+    versions = versions.mix( RENAME_SM_TAG        .out.versions )
+    versions = versions.mix( SAMTOOLS_INDEX       .out.versions )
 
     emit:
-    versions              // channel: [ versions.yml ]
+    merged_crams // channel: [ meta, cram, crai ]
+
+    versions     // channel: [ versions.yml ]
 }
