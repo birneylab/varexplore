@@ -47,8 +47,9 @@ def fasta         = params.fasta ? file ( params.fasta ) : []
 //
 
 include { INPUT_CHECK     } from '../subworkflows/local/input_check'
-include { PREPROCESSING   } from '../subworkflows/local/preprocessing.nf'
-include { VARIANT_CALLING } from '../subworkflows/local/variant_calling.nf'
+include { PREPROCESSING   } from '../subworkflows/local/preprocessing'
+include { VARIANT_CALLING } from '../subworkflows/local/variant_calling'
+include { PREDICT_EFFECTS } from '../subworkflows/local/predict_effects'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,10 +83,12 @@ workflow VAREXPLORE {
         PREPROCESSING.out.fa_idx,
         PREPROCESSING.out.fa_dict,
     )
+    PREDICT_EFFECTS ( VARIANT_CALLING.out.vcf )
 
     versions = versions.mix( INPUT_CHECK.out.versions     )
     versions = versions.mix( PREPROCESSING.out.versions   )
     versions = versions.mix( VARIANT_CALLING.out.versions )
+    versions = versions.mix( PREDICT_EFFECTS.out.versions )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         versions.unique().collectFile(name: 'collated_versions.yml')
