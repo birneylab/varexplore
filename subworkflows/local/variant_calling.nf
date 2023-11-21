@@ -14,10 +14,27 @@ workflow VARIANT_CALLING {
 
     merged_crams
     .map { meta, cram, crai -> [ meta, cram, crai, meta.region, [] ] }
-    .first()
     .set { haplotypecaller_in }
     GATK4_HAPLOTYPECALLER ( haplotypecaller_in, fasta, fa_idx, fa_dict, [], [] )
     GATK4_HAPLOTYPECALLER.out.vcf
+    .join ( GATK4_HAPLOTYPECALLER.out.tbi )
+    .map {
+        meta, vcf, tbi ->
+        def new_meta = [
+            id: "variant_${meta.variant}",
+            variant: meta.variant,
+            chr    : meta.chr,
+            start  : meta.start,
+            end    : meta.end,
+            region : meta.region
+        ]
+        [ new_meta, vcf, tbi ]
+    }
+    .groupTuple ()
+    .map { meta, vcfs, tbis -> [ meta, vcfs, tbis, [], meta.region, [] ] }
+    .set { genomicsdbimport_in }
+    GATK4_GENOMICSDBIMPORT ( genomicsdbimport_in, false, false, false )
+    GATK4_GENOMICSDBIMPORT.out.genomicsdb
     .view()
 
     //versions = versions.mix( BCFTOOLS_INDEX       .out.versions )
