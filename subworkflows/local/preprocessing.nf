@@ -3,6 +3,7 @@ include { SAMTOOLS_MERGE                              } from '../../modules/nf-c
 include { BCFTOOLS_INDEX                              } from '../../modules/nf-core/bcftools/index'
 include { BCFTOOLS_QUERY as EXTRACT_SAMPLES_BY_GT     } from '../../modules/nf-core/bcftools/query'
 include { BCFTOOLS_QUERY as EXTRACT_POSSIBLE_GT       } from '../../modules/nf-core/bcftools/query'
+include { SAMTOOLS_REHEADER as RENAME_SM_TAG          } from '../../modules/nf-core/samtools/reheader'  
 
 workflow PREPROCESSING {
     take:
@@ -90,7 +91,6 @@ workflow PREPROCESSING {
     }
     .set { filtered_crams }
 
-
     EXTRACT_SAMPLES_BY_GT.out.output
     .splitText ( elem: 1 )
     .map { meta, sample -> [ meta, sample.trim() ] }
@@ -98,8 +98,8 @@ workflow PREPROCESSING {
     .map {
         meta, samples ->
         def new_meta = meta.clone()
-        // before it was all the samples in group, overwrite with only the ones with
-        // the right GT
+        // before this contained all the samples in group, now overwrite with only the samples
+        // that have the right GT
         new_meta.samples = samples
         def merge_col = [ meta.group, meta.variant ]
         [ merge_col, new_meta ]
@@ -115,8 +115,11 @@ workflow PREPROCESSING {
         assert meta1.region  == meta2.region
         [ meta1, cram ]
     }
-    .view()
-    //SAMTOOLS_MERGE ( grouped_crams, [ [ id: null ], fasta], [ [ id: null ], [] ] )
+    .groupTuple ()
+    .set { crams_to_merge }
+    SAMTOOLS_MERGE ( crams_to_merge, [ [ id: null ], fasta ], [ [ id: null ], [] ] )
+    RENAME_SM_TAG ( SAMTOOLS_MERGE.out.cram )
+    RENAME_SM_TAG.out.cram.view()
 
 
     //versions = versions.mix( FILTER_CRAM              .out.versions )
