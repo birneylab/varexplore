@@ -1,6 +1,6 @@
-process GATK4_MERGEVCFS {
+process GATK4_GENOTYPEGVCFS {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -8,11 +8,15 @@ process GATK4_MERGEVCFS {
         'biocontainers/gatk4:4.4.0.0--py36hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(vcf)
-    tuple val(meta2), path(dict)
+    tuple val(meta), path(gvcf), path(gvcf_index), val(intervals), path(intervals_index)
+    path  fasta
+    path  fai
+    path  dict
+    path  dbsnp
+    path  dbsnp_tbi
 
     output:
-    tuple val(meta), path('*.vcf.gz'), emit: vcf
+    tuple val(meta), path("*.vcf.gz"), emit: vcf
     tuple val(meta), path("*.tbi")   , emit: tbi
     path  "versions.yml"             , emit: versions
 
@@ -22,22 +26,25 @@ process GATK4_MERGEVCFS {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def input_list = vcf.collect{ "--INPUT $it"}.join(' ')
-    def reference_command = dict ? "--SEQUENCE_DICTIONARY $dict" : ""
+    def gvcf_command = gvcf.name.endsWith(".vcf") || gvcf.name.endsWith(".vcf.gz") ? "$gvcf" : "gendb://$gvcf"
+    def dbsnp_command = dbsnp ? "--dbsnp $dbsnp" : ""
+    def interval_command = intervals ? "--intervals $intervals" : ""
 
     def avail_mem = 3072
     if (!task.memory) {
-        log.info '[GATK MergeVcfs] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
+        log.info '[GATK GenotypeGVCFs] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
     } else {
         avail_mem = (task.memory.mega*0.8).intValue()
     }
     """
     gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData" \\
-        MergeVcfs \\
-        $input_list \\
-        --OUTPUT ${prefix}.vcf.gz \\
-        $reference_command \\
-        --TMP_DIR . \\
+        GenotypeGVCFs \\
+        --variant $gvcf_command \\
+        --output ${prefix}.vcf.gz \\
+        --reference $fasta \\
+        $interval_command \\
+        $dbsnp_command \\
+        --tmp-dir . \\
         $args
 
     cat <<-END_VERSIONS > versions.yml
@@ -48,6 +55,7 @@ process GATK4_MERGEVCFS {
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
+
     """
     touch ${prefix}.vcf.gz
     touch ${prefix}.vcf.gz.tbi

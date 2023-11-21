@@ -1,6 +1,6 @@
-include { GATK4_HAPLOTYPECALLER                                  } from '../../modules/nf-core/gatk4/haplotypecaller'
-include { GATK4_MERGEVCFS                                        } from '../../modules/nf-core/gatk4/mergevcfs'
-include { GATK4_GENOMICSDBIMPORT                                 } from '../../modules/nf-core/gatk4/genomicsdbimport'
+include { GATK4_HAPLOTYPECALLER  } from '../../modules/nf-core/gatk4/haplotypecaller'
+include { GATK4_GENOMICSDBIMPORT } from '../../modules/nf-core/gatk4/genomicsdbimport'
+include { GATK4_GENOTYPEGVCFS    } from '../../modules/nf-core/gatk4/genotypegvcfs'
 
 workflow VARIANT_CALLING {
     take:
@@ -35,11 +35,19 @@ workflow VARIANT_CALLING {
     .set { genomicsdbimport_in }
     GATK4_GENOMICSDBIMPORT ( genomicsdbimport_in, false, false, false )
     GATK4_GENOMICSDBIMPORT.out.genomicsdb
-    .view()
+    .map { meta, genomicsdb -> [ meta, genomicsdb, [], meta.region, [] ] }
+    .set { genotype_input }
+    GATK4_GENOTYPEGVCFS(genotype_input, fasta, fa_idx, fa_dict, [], [] )
+    GATK4_GENOTYPEGVCFS.out.vcf
+    .join ( GATK4_GENOTYPEGVCFS.out.tbi, by: 0, failOnDuplicate: true, failOnMismatch: true )
+    .set { vcf }
 
-    //versions = versions.mix( BCFTOOLS_INDEX       .out.versions )
+    versions = versions.mix( GATK4_HAPLOTYPECALLER .out.versions )
+    versions = versions.mix( GATK4_GENOMICSDBIMPORT.out.versions )
+    versions = versions.mix( GATK4_GENOTYPEGVCFS   .out.versions )
 
     emit:
+    vcf       // channel: [ meta, vcf, tbi ]
 
-    versions     // channel: [ versions.yml ]
+    versions  // channel: [ versions.yml ]
 }
