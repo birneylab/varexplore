@@ -76,7 +76,12 @@ workflow VAREXPLORE {
     INPUT_CHECK.out.vars .set { vars  }
 
     PREPROCESSING   ( reads, vars, vcf, fasta )
-    VARIANT_CALLING ( PREPROCESSING.out.merged_crams, fasta )
+    VARIANT_CALLING (
+        PREPROCESSING.out.merged_crams,
+        fasta,
+        PREPROCESSING.out.fa_idx,
+        PREPROCESSING.out.fa_dict,
+    )
 
     versions = versions.mix( INPUT_CHECK.out.versions     )
     versions = versions.mix( PREPROCESSING.out.versions   )

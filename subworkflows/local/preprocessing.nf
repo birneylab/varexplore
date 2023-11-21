@@ -5,6 +5,8 @@ include { BCFTOOLS_QUERY as EXTRACT_SAMPLES_BY_GT } from '../../modules/nf-core/
 include { BCFTOOLS_QUERY as EXTRACT_POSSIBLE_GT   } from '../../modules/nf-core/bcftools/query'
 include { SAMTOOLS_REHEADER as RENAME_SM_TAG      } from '../../modules/nf-core/samtools/reheader'  
 include { SAMTOOLS_INDEX                          } from '../../modules/nf-core/samtools/index'
+include { SAMTOOLS_FAIDX                          } from '../../modules/nf-core/samtools/faidx'
+include { SAMTOOLS_DICT                           } from '../../modules/nf-core/samtools/dict'
 
 workflow PREPROCESSING {
     take:
@@ -16,6 +18,9 @@ workflow PREPROCESSING {
     main:
     versions = Channel.empty()
 
+    def ref_basename = (fasta[-1] as String).replaceAll(/\.fa(sta)?(\.gz)?$/, "")
+    def vcf_basename = (vcf[-1]   as String).replaceAll(/\.(v|b)cf(\.gz)?$/, "")
+
     reads
     .map { meta, cram, crai -> [ meta.group, meta.id ] }
     .groupTuple ()
@@ -23,7 +28,7 @@ workflow PREPROCESSING {
     .set { samples_per_group }
 
     Channel.fromPath( vcf )
-    .map { [ [ id: null ], it ] }
+    .map { [ [ id: vcf_basename ], it ] }
     .set { vcf_ch }
     BCFTOOLS_INDEX ( vcf_ch )
     vcf_ch
@@ -127,6 +132,13 @@ workflow PREPROCESSING {
     .join( SAMTOOLS_INDEX.out.crai, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .set { merged_crams }
 
+    SAMTOOLS_FAIDX ( [ [ id: ref_basename ], fasta ], [[ id: null ], [] ] )
+    SAMTOOLS_DICT ( [ [ id: ref_basename ], fasta ] )
+    SAMTOOLS_FAIDX.out.fai .map { meta, fai  -> fai  }.set { fa_fai  }
+    SAMTOOLS_FAIDX.out.gzi .map { meta, gzi  -> gzi  }.set { fa_gzi  }
+    fa_fai.mix ( fa_gzi ).collect().set { fa_idx }
+    SAMTOOLS_DICT .out.dict.map { meta, dict -> dict }.set { fa_dict }
+
     versions = versions.mix( BCFTOOLS_INDEX       .out.versions )
     versions = versions.mix( EXTRACT_POSSIBLE_GT  .out.versions )
     versions = versions.mix( EXTRACT_SAMPLES_BY_GT.out.versions )
@@ -137,6 +149,8 @@ workflow PREPROCESSING {
 
     emit:
     merged_crams // channel: [ meta, cram, crai ]
+    fa_idx       // value  : fasta index (fai and optionally gzi as a single emission)
+    fa_dict      // value  : fasta dict 
 
     versions     // channel: [ versions.yml ]
 }
