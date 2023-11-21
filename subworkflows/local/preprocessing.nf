@@ -86,36 +86,30 @@ workflow PREPROCESSING {
     FILTER_CRAM.out.cram
     .map { 
         meta, cram ->
-        def merge_col = [ meta.group, meta.variant ]
+        def merge_col = [ meta.group, meta.sample, meta.variant ]
         [ merge_col, meta, cram ] 
     }
     .set { filtered_crams }
 
     EXTRACT_SAMPLES_BY_GT.out.output
     .splitText ( elem: 1 )
-    .map { meta, sample -> [ meta, sample.trim() ] }
-    .groupTuple ()
     .map {
-        meta, samples ->
+        meta, sample ->
         def new_meta = meta.clone()
-        // before this contained all the samples in group, now overwrite with only the samples
-        // that have the right GT
-        new_meta.samples = samples
-        def merge_col = [ meta.group, meta.variant ]
-        [ merge_col, new_meta ]
+        new_meta.samples = null // this was referring to the whole group, not GT specific
+        def sample_trimmed = sample.trim()
+        def merge_col = [ meta.group, sample_trimmed, meta.variant ]
+        [ merge_col, sample_trimmed, new_meta ]
     }
     .combine ( filtered_crams, by: 0 )
-    .map {
-        merge_col, meta1, meta2, cram ->
-        assert meta1.group   == meta2.group
-        assert meta1.variant == meta2.variant
-        assert meta1.chr     == meta2.chr
-        assert meta1.start   == meta2.start
-        assert meta1.end     == meta2.end
-        assert meta1.region  == meta2.region
-        [ meta1, cram ]
-    }
+    .map { merge_col, sample, meta1, meta2, cram -> [ meta1, sample, cram ] }
     .groupTuple ()
+    .map {
+        meta, samples, crams ->
+        def new_meta = meta.clone()
+        new_meta.samples = samples
+        [ new_meta, crams ]
+    }
     .set { crams_to_merge }
     SAMTOOLS_MERGE ( crams_to_merge, [ [ id: null ], fasta ], [ [ id: null ], [] ] )
     RENAME_SM_TAG ( SAMTOOLS_MERGE.out.cram )
