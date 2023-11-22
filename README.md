@@ -17,7 +17,7 @@ This would allow to discover for example frameshifts and other mutations with la
 
 ![birneylab/varexplore_metro_map](docs/images/birneylab_varexplore_drawing.png)
 
-1. Convert vcf genotypes to `pgen` format ([`plink2`](https://www.cog-genomics.org/plink/2.0/))
+<!-- 1. Convert vcf genotypes to `pgen` format ([`plink2`](https://www.cog-genomics.org/plink/2.0/))
 1. Compute the relatedness matrix for the whole genome and each LOCO subset ([`plink2`](https://www.cog-genomics.org/plink/2.0/))
 1. Verify that the statistical model specified is nested in the null model ([`R language`](https://www.r-project.org/))
 1. Estimate variance components using the null model fixed effects and the relatedness matrix ([`gaston`](https://cran.r-project.org/web/packages/gaston/index.html))
@@ -29,71 +29,7 @@ This would allow to discover for example frameshifts and other mutations with la
 1. Make the final plots ([`ggplot2`](https://ggplot2.tidyverse.org/)):
    - Manhattan plot of the associations
    - Quantile-quantile plots
-   - Heatmap of the relatedness matrices ([`ComplexHeatmap`](https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html))
-
-## Capabilities
-
-- Permutations are reproducible since the permutation index is used as a random seed
-- `Plink2` used wherever possible
-- Model fitting done by loading in memory only one SNP at a time directly from the `pgen` file and using low-level internal R routines to increase performance
-- Can test for dominance and interactions of the genotype with fixed covariates (for example, to test for GxE and GxG)
-- Can standardize or quantile-normalize the phenotypes
-- Can include quantitative and/or categorical covariates
-- Permutations can be done within subgroups specified by a categorical covariate
-  - This is useful when distinct sub-populations are present, such as in the case of multiple F2 crosses
-
-## To be implemented
-
-- Quantitative phenotypes (case-control studies)
-
-## The formula interface
-
-The central concept of this pipeline is that of testing weather a certain statistical model (the 'real model') is significantly better than another statistical model (the 'null model').
-The ratio of likelyhoods of the 2 models follows a $\chi^2$ distribution, from which it is possible to extract a _p_-value.
-This approach is known as [Likelihood-ratio test](https://en.wikipedia.org/wiki/Likelihood-ratio_test).
-A condition for this test is that the null model must be nested in the real model. That is, the real model must include all the terms present in the null model plus at least one extra term.
-
-In this pipeline both models are supplied by the user in the form of [R formulas](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula) using the parameters `null_model_formula` and `model_formula`.
-In the formulas is possible to refer to the genotype of a given SNP with the term `x`, and to the phenotype with the term `y`.
-An intercept is automatically included but can be removed by adding the term `0` or `-1` to the models.
-Derived quantities such as a dominance term (i.e. `x==1` for genotypes encoded as 0,1,2) can be used but must be enclosed in parenthesis.
-Names of the columns in the covariate and quantitative covariate file can also be used.
-Consult the [parameter documentation](docs/parameters.md) to see how these files should be formatted.
-
-A valid real model and null model formula pair is for example:
-
-```
-model_formula: y ~ x + (x==1) + x:cov1 + cov1
-null_model_formula: y ~ cov1
-```
-
-Here, `cov1` is the name of one of the columns of the file specified via `--covar` or `--qcovar`.
-The _p_-value that you will obtain in this case will indicate if any of the terms `x`, `(x==1)`, and `x:cov1` have an effect significantly different from 0, when an intercept and `cov1` are accounted for.
-
-The following formulas instead are **NOT** valid:
-
-```
-model_formula: y ~ x + (x==1) + x:cov1
-null_model_formula: y ~ cov1
-```
-
-This is because the null model contains the term `cov1` which is not present in the model, and thus the formulas are not nested.
-
-## Technical details
-
-This pipeline fits a Leave-One-Chromosome-Out (LOCO) mixed model using the 'null model' terms as fixed effects and the realised relatedness matrix as correlation matrix to estimate the variance components.
-The variance components are then used to estimate the variance-covariance matrix of the phenotypes.
-The square root of the variance-covariance matrix is determined via [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition), and this decomposition is used to rotate the response vector and the design matrix for each 'real model' before running [Ordinary Least Squares (OLS)](https://en.wikipedia.org/wiki/Ordinary_least_squares).
-Except for the fact that the fixed effect SNPs are not included in the variance components estimation (for performance reasons), fitting OLS to the rotated response and design matrix is mathematically equivalent to fitting Generalised Least Squares (i.e. fitting a mixed model) to the original response and design matrix.
-This is a fairly standard approach used for example [here](https://github.com/grimmlab/permGWAS).
-
-Permutations are run on the genotype vectors jointly, so that each genotype is permuted in the same way and linkage disequilibrium is maintained. Since phenotypes and covariates are not permuted, also their relationship is not altered.
-Genotype permutations are performed AFTER the Cholesky rotation, so that the relatedness structure is regressed out from the correct samples and only the residuals from this operation are permuted.
-This corresponds to a null hypothesis where the exchangeable quantities are the genotype identities when relatedness is accounted already for.
-See [here](https://doi.org/10.1186/s13059-021-02354-7) for an example of this approach being used in practice.
-
-Significance thresholds for a given nominal significance level are reported using [Bonferroni correction](https://en.wikipedia.org/wiki/Bonferroni_correction) and Westfall–Young permutations (see [here](https://doi.org/10.1093/bioinformatics/btac455)).
-If $m$ permutations are performed, the significance threshold is set as the $t$ quantile of the empirical distribution given by the minimum p-values for each permutation (in total a set of $m$ p-values), where $t$ is the nominal significance desired.
+   - Heatmap of the relatedness matrices ([`ComplexHeatmap`](https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html)) -->
 
 ## Integration with [birneylab/stitchimpute](https://github.com/birneylab/stitchimpute)
 
@@ -105,8 +41,6 @@ This correctly loads the dosage information and fills missing genotypes.
 For ease of use, the ideal settings for stitch for medaka samples have been specified in a profile called `medaka`.
 This can be activated with the flag `-profile medaka`.
 Always use this profile when working with medaka samples.
-If the genotypes that you are using have been obtained with the *birneylab/stitchimpute* pipeline, you should also use the `stitch` profile.
-In this case the flag to be used is `-profile medaka,stitch`
 
 ## Usage
 
