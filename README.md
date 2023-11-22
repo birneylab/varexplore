@@ -26,8 +26,21 @@ This would allow to discover for example frameshifts and other mutations with la
 
 ## Integration with [birneylab/stitchimpute](https://github.com/birneylab/stitchimpute)
 
-In order to use a vcf file obtained from the **birneylab/stitchimpute** pipeline, activate the `stitch` profile with the flag `-profile stitch`.
-This correctly loads the dosage information and fills missing genotypes.
+In order to use a vcf file obtained from the **birneylab/stitchimpute** pipeline, add an ID for the variants that you want to be used for separating the samples using `bcftools`:
+
+```bash
+bcftools annotate \
+   --set-id '%CHROM\_%POS\_%REF\_%FIRST_ALT' \
+   -O z \
+   -o stitchimpute.with_ids.vcf.gz \
+   stitchimpute.vcf.gz
+```
+
+Then, in `--variant_table` refer to the variants of interest using the same naming scheme. For example, a variant on chromosome 1 position 123 with reference allele A and alternate allele T will have ID:
+
+```
+1_123_A_T
+```
 
 ## Birneylab-specific information
 
