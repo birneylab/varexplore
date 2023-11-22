@@ -1,6 +1,6 @@
-# birneylab/flexlmm pipeline parameters
+# birneylab/varexplore pipeline parameters
 
-Flexible linear mixed model framework for Genome Wide Association Studies
+Explore genetic variants linked around a variant of interest for low-coverage sequencing data 
 
 ## Input/output options
 

@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
   "$id": "https://raw.githubusercontent.com/birneylab/flexlmm/master/nextflow_schema.json",
-  "title": "birneylab/flexlmm pipeline parameters",
-  "description": "Flexible linear mixed model framework for Genome Wide Association Studies",
+  "title": "birneylab/varexplore pipeline parameters",
+  "description": "Explore genetic variants linked around a variant of interest for low-coverage sequencing data ",
   "type": "object",
   "definitions": {
     "input_output_options": {
