@@ -12,14 +12,11 @@ workflow PREPROCESSING {
     take:
     reads // channel: [mandatory] [meta, cram, crai]
     vars  // channel: [mandatory] [meta, chr, start, end]
-    vcf   // value  : [mandatory] vcf_file
-    fasta // value  : [mandatory] reference fasta file
+    vcf   // value  : [mandatory] [meta, vcf_file]
+    fasta // value  : [mandatory] [meta, fasta]
 
     main:
     versions = Channel.empty()
-
-    def ref_basename = (fasta[-1] as String).replaceAll(/\.fa(sta)?(\.gz)?$/, "")
-    def vcf_basename = (vcf[-1]   as String).replaceAll(/\.(v|b)cf(\.gz)?$/, "")
 
     reads
     .map { meta, cram, crai -> [ meta.group, meta.id ] }
@@ -27,11 +24,8 @@ workflow PREPROCESSING {
     .map { group, samples -> [ group, samples.join(",") ] }
     .set { samples_per_group }
 
-    Channel.fromPath( vcf )
-    .map { [ [ id: vcf_basename ], it ] }
-    .set { vcf_ch }
-    BCFTOOLS_INDEX ( vcf_ch )
-    vcf_ch
+    BCFTOOLS_INDEX ( vcf )
+    Channel.value ( vcf )
     .join ( BCFTOOLS_INDEX.out.csi, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .combine ( samples_per_group )
     .combine ( vars )
@@ -88,7 +82,7 @@ workflow PREPROCESSING {
         [ meta, cram, crai ]
     }
     .set { filter_cram_in_ch }
-    FILTER_CRAM ( filter_cram_in_ch, [ [ id: null ], fasta ], [] )
+    FILTER_CRAM ( filter_cram_in_ch, fasta, [] )
     FILTER_CRAM.out.cram
     .map { 
         meta, cram ->
@@ -117,7 +111,7 @@ workflow PREPROCESSING {
         [ new_meta, crams ]
     }
     .set { crams_to_merge }
-    SAMTOOLS_MERGE ( crams_to_merge, [ [ id: null ], fasta ], [ [ id: null ], [] ] )
+    SAMTOOLS_MERGE ( crams_to_merge, fasta, [ [ id: null ], [] ] )
     RENAME_SM_TAG ( SAMTOOLS_MERGE.out.cram )
     RENAME_SM_TAG.out.cram
     .map {
@@ -132,8 +126,8 @@ workflow PREPROCESSING {
     .join( SAMTOOLS_INDEX.out.crai, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .set { merged_crams }
 
-    SAMTOOLS_FAIDX ( [ [ id: ref_basename ], fasta ], [[ id: null ], [] ] )
-    SAMTOOLS_DICT ( [ [ id: ref_basename ], fasta ] )
+    SAMTOOLS_FAIDX ( fasta, [[ id: null ], [] ] )
+    SAMTOOLS_DICT ( fasta )
     SAMTOOLS_FAIDX.out.fai .map { meta, fai  -> fai  }.set { fa_fai  }
     SAMTOOLS_FAIDX.out.gzi .map { meta, gzi  -> gzi  }.set { fa_gzi  }
     fa_fai.mix ( fa_gzi ).collect().set { fa_idx }

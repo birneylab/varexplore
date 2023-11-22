@@ -32,14 +32,20 @@ for ( param in checkPathParamList ) if ( param ) file ( param, checkIfExists: tr
 
 def input           = file ( params.input         )
 def variant_table   = file ( params.variant_table )
-def vcf             = file ( params.vcf           )
-def fasta           = params.fasta ? file ( params.fasta ) : []
+def vcf_file        = file ( params.vcf           )
+def fasta_file      = file ( params.fasta         )
 def ensemblvep_info = [
     [ id:"${params.vep_cache_version}_${params.vep_genome}" ],
     params.vep_genome,
     params.vep_species,
     params.vep_cache_version
 ]
+
+def ref_basename = ( fasta_file[-1] as String ).replaceAll ( /\.fa(sta)?(\.gz)?$/, "" )
+def vcf_basename = ( vcf_file[-1]   as String ).replaceAll ( /\.(v|b)cf(\.gz)?$/ , "" )
+def vcf          = [ [ id: vcf_basename ], vcf_file   ]
+def fasta        = [ [ id: ref_basename ], fasta_file ]
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,7 +86,7 @@ workflow VAREXPLORE {
     INPUT_CHECK ( input, variant_table )
     INPUT_CHECK.out.reads.set { reads }
     INPUT_CHECK.out.vars .set { vars  }
-
+ 
     PREPROCESSING   ( reads, vars, vcf, fasta )
     VARIANT_CALLING (
         PREPROCESSING.out.merged_crams,
@@ -88,7 +94,7 @@ workflow VAREXPLORE {
         PREPROCESSING.out.fa_idx,
         PREPROCESSING.out.fa_dict,
     )
-    PREDICT_EFFECTS ( VARIANT_CALLING.out.vcf, ensemblvep_info )
+    PREDICT_EFFECTS ( VARIANT_CALLING.out.vcf, ensemblvep_info, fasta )
 
     versions = versions.mix( INPUT_CHECK.out.versions     )
     versions = versions.mix( PREPROCESSING.out.versions   )
