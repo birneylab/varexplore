@@ -1,4 +1,4 @@
-# ![birneylab/flexlmm](docs/images/birneylab-flexlmm_name_light.png#gh-light-mode-only) ![birneylab/flexlmm](docs/images/birneylab-flexlmm_name_dark.png#gh-dark-mode-only)
+# ![birneylab/varexplore](docs/images/birneylab-varexplore_name_light.png#gh-light-mode-only) ![birneylab/flexlmm](docs/images/birneylab-varexplore_name_dark.png#gh-dark-mode-only)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
@@ -7,14 +7,15 @@
 
 ## Introduction
 
-**birneylab/flexlmm** is a bioinformatics pipeline that runs linear mixed models for Genome-Wide Association Studies.
-Its main advantage compared to similar tools is that it is very flexible in the definition of the statistical model to be used and it performs permutations to correct for multiple testing and non-normal phenotypes.
-_p_-values are evaluated with a [likelyhood ratio test](https://en.wikipedia.org/wiki/Likelihood-ratio_test) between a 'null model' and a 'real model'.
-Both models are specified by the user with the [R formula interface](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula).
+**birneylab/varexplore** is a bioinformatics pipeline that clusters next-generation sequencing data from a set of samples according to the allele that they carry at a given marker, and then calls genetic variants and predicts variant effects on the aggregated meta-samples.
+This is useful when dealing with imputed variants from low-coverage sequencing, such as the ones produced by the [birneylab/stitchimpute](https://github.com/birneylab/stitchimpute) pipeline.
+Many imputation tools impute only SNPs, and in a GWAS contest the causal variant at locus may be something (i.e., indels) that is in linkage disequilibrium with an imputed marker, but not included in the set of imputed markers themselves.
+In such cases, grouping samples according to the allele at a marker of interest (the SNP with the strongest association signal) allows for calling additional variants in the region that are in linkage disequilibrium with the marker.
+This would allow to discover for example frameshifts and other mutations with large effects on protein function that are in strong linkage with a marker of of interest.
 
 **Disclaimer**: this pipeline uses the nf-core template but it is not part of nf-core itself.
 
-![birneylab/stitchimpute_metro_map](docs/images/birneylab_flexlmm_drawing.png)
+![birneylab/varexplore_metro_map](docs/images/birneylab_varexplore_drawing.png)
 
 1. Convert vcf genotypes to `pgen` format ([`plink2`](https://www.cog-genomics.org/plink/2.0/))
 1. Compute the relatedness matrix for the whole genome and each LOCO subset ([`plink2`](https://www.cog-genomics.org/plink/2.0/))
