@@ -108,7 +108,7 @@ For more details about the output files and reports, please refer to the
 
 ## Credits
 
-> birneylab/flexlmm was originally written by Saul Pierotti.
+> birneylab/varexplore was originally written by Saul Pierotti.
 
 ## Citations
 
