@@ -66,7 +66,7 @@ s3,s3.cram,s3.cram.crai,g2
 s4,s4.cram,s4.cram.crai,g2
 ```
 
-Each row represents a sample with associated sequencing files (`cram`) and indexes (`crai`). The `group` column indicates whether the samples should be sub-divided in groups when forming the meta-samples. Simply set all the samples to the same group if you don't want to use this feature.
+Each row represents a sample with associated sequencing files (`cram`) and indexes (`crai`). The `group` column indicates whether the samples should be sub-divided in groups when forming the meta-samples. Simply set all the samples to the same group if you don't want to use this feature. `sample` should match the sample names in the vcf file provided, to assign genotypes to the correct samples.
 
 Prepare also a file containing the variants of interest and the region boundaries that looks as follows:
 
