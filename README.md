@@ -55,13 +55,39 @@ Always use this profile when working with medaka samples.
 > to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline)
 > with `-profile test` before running the workflow on actual data.
 
+First, prepare a samplesheet with your input data that looks as follows:
+
+`samplesheet.csv`:
+```
+sample,cram,crai,group
+s1,s1.cram,s1.cram.crai,g1
+s2,s2.cram,s2.cram.crai,g1
+s3,s3.cram,s3.cram.crai,g2
+s4,s4.cram,s4.cram.crai,g2
+```
+
+Each row represents a sample with associated sequencing files (`cram`) and indexes (`crai`). The `group` column indicates whether the samples should be sub-divided in groups when forming the meta-samples. Simply set all the samples to the same group if you don't want to use this feature.
+
+Prepare also a file containing the variants of interest and the region boundaries that looks as follows:
+
+`variant_table.csv`:
+```
+var_id,chr,region_start,region_end
+1_100_G_A,1,50,150
+1_200_C_T,1,150,250
+```
+
+Each row represents a variant that should be used to group the samples according to the allele that they carry for such variant.
+`var_id` should match the ID field of a variant in the vcf file provided. `chr` should name the chromosome the variant resides in. `region_start` and `region_end` define the region of interest in the meta-samples where new variants in linkage disequilibrium with the variant of interest should be called.
+
 You can run the pipeline using:
 
 ```bash
 nextflow run birneylab/varexplore \
    -profile <docker/singularity/.../institute> \
    --vcf input.vcf.gz \
-   --genome 
+   --input sample_table.csv \
+   --variant_table variant_table.csv \ 
    --outdir <OUTDIR>
 ```
 
