@@ -1,17 +1,16 @@
-# birneylab/flexlmm: Usage
+# birneylab/varexplore: Usage
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run birneylab/flexlmm \
-  --vcf ./input.vcf \
-  --pheno ./input.pheno \
-  --model_formula 'y ~ x' \
-  --null_model_formula 'y ~ 1' \
-  --outdir ./results \
-  -profile docker
+nextflow run birneylab/varexplore \
+   -profile docker \
+   --vcf input.vcf.gz \
+   --input sample_table.csv \
+   --variant_table variant_table.csv \ 
+   --outdir <OUTDIR>
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -34,37 +33,32 @@ Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <
 The above pipeline run specified with a params file in yaml format:
 
 ```bash
-nextflow run birneylab/flexlmm -profile docker -params-file params.yaml
+nextflow run birneylab/varexplore -profile docker -params-file params.yaml
 ```
 
 with `params.yaml` containing:
 
 ```yaml
+input: 'input.csv'
+variant_table: 'variant_table.csv'
 vcf: './input.vcf'
-outdir: './results/'
-pheno: './input.pheno'
-null_model_formula: 'y ~ 1'
-model_formula: 'y ~ x'
+outdir: './results'
 <...>
 ```
-
-<!--
-You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
--->
 
 ### Updating the pipeline
 
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
 ```bash
-nextflow pull birneylab/flexlmm
+nextflow pull birneylab/varexplore
 ```
 
 ### Reproducibility
 
 It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [birneylab/stitchimpute releases page](https://github.com/birneylab/stitchimpute/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+First, go to the [birneylab/varexplore releases page](https://github.com/birneylab/varexplore/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future.
 

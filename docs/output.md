@@ -1,4 +1,4 @@
-# birneylab/flexlmm: Output
+# birneylab/varexplore: Output
 
 ## Introduction
 
@@ -10,7 +10,7 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [Convert genotypes](#convert-genotypes) - Convert genotypes to the pgen format
+<!-- - [Convert genotypes](#convert-genotypes) - Convert genotypes to the pgen format
 - [Prepare inputs](#prepare-inputs) - Format and match the data for downstream processing
 - [Relatedness](#relatedness) - Computes full-genome and LOCO relatedness matrices
 - [Variance components](#variance-components) - Estimate genetic and residuals variances
@@ -129,7 +129,7 @@ Manhattan plots of the GWAS results, QQ plots, and heatmaps of the relatedness m
     - `loco/{left_out_chromosome_name}/*.png`: LOCO relatedness matrix heatmaps, one per chromosome and phenotype
     - `full_genome/*.png`: full-genome relatedness matrix heatmaps, one per phenotype
 
-</details>
+</details> -->
 
 
 ### Pipeline information
