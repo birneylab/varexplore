@@ -78,8 +78,8 @@
         }
       }
     },
-    "new_group_1": {
-      "title": "New Group 1",
+    "ensembl_vep_options": {
+      "title": "ENSEMBL VEP Options",
       "type": "object",
       "description": "Information needed for predicting variant effects with VEP",
       "default": "",

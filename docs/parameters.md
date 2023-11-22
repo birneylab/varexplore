@@ -8,31 +8,32 @@ Define where the pipeline should find input data and save output data.
 
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
+| `input` | Path to comma-separated file containing information about the samples in the experiment. | `string` |  |  |  |
+| `variant_table` | Path to comma-separated file containing information about the genetic variants to be considered. | `string` |  |  |  |
+| `vcf` | VCF(.gz) file with samples overlapping with the ones in `input` <details><summary>Help</summary><small>This is needed for extracting the sample genotypes at the variants of interest.</small></details>| `string` |  |  |  |
 | `outdir` | The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure. | `string` |  | True |  |
-| `vcf` | VCF file containing the sample genotypes. Can be bgzip compressed. | `string` |  | True |  |
-| `pheno` | Phenotype file in PLINK2 format <details><summary>Help</summary><small>The first columns must be either FID/IID or just IID (in which case the FID is assumed to be 0). A primary header line is required and it should begin with 'FID', '#FID', 'IID', or '#IID'). Differently from the plink2 format, additional header lines (beginning with '#', not immediately followed by 'FID'/'IID') are NOT permitted before the primary header line. <br><br>IID must match sample names in `vcf`. FID is tolerated but not used. Missing values should be specified as NA and not following plink2 conventions (i.e. -9 is NOT seen as missing).<br><br>See an [example file](../assets/test_data/tsv/pheno.tsv)</small></details>| `string` |  | True |  |
-| `covar` | Categorical covariates. Same format as `pheno`. <details><summary>Help</summary><small>Columns cannot be named 'x', 'y', 'ID', '#ID', 'FID', or '#FID', or have the same name of columns in `qcovar` .<br><br>See an [example file](../assets/test_data/tsv/covar.tsv)</small></details>| `string` |  |  |  |
-| `qcovar` | Quantitative covariates. Same format as `pheno`. <details><summary>Help</summary><small>Columns cannot be named 'x', 'y', 'ID', '#ID', 'FID', or '#FID', or have the same name of columns in `covar` .<br><br>See an [example file](../assets/test_data/tsv/qcovar.tsv)</small></details>| `string` |  |  |  |
-| `freq` | Same format as `vcf`. Genotypes to use for estimating allele frequencies. If not provided `vcf` is used. | `string` |  |  |  |
-| `maf_min` | Exclude from the analysis genetic variants with a Minor Allele Frequency (MAF) under this value | `number` |  |  |  |
-| `use_dosage` | Should genotype dosages be used or hard calls? <details><summary>Help</summary><small>If set to true, the genotype dosages are converted to hard calls without missingness. If you want to use more advanced conversion criteria use the ext.args* slot of the VCF_TO_PGEN and FIT_MODEL processes.</small></details>| `boolean` | true |  |  |
-| `select_chr` | Restrict analysis to a set of chromosomes <details><summary>Help</summary><small>Comma-separated string of chromosome names in `vcf`. If not specified all chromosomes are used. If a chromosome is specified still the rest of the genome is used to evaluate the LOCO relatedness matrix.<br><br>Example: '1,2,3'</small></details>| `string` |  |  |  |
-| `select_pheno` | Restrict analysis to a set of phenotypes <details><summary>Help</summary><small>Comma-separated string of column names in `pheno` to be used as phenotypes. If not specified all the columns of `pheno` are used.<br><br>Example: 'pheno1,pheno2'</small></details>| `string` |  |  |  |
 | `email` | Email address for completion summary. <details><summary>Help</summary><small>Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.</small></details>| `string` |  |  |  |
 
-## Statistical parameters
+## Reference genome options
 
-
+Reference genome related files and options required for the workflow.
 
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
-| `quantile_normalise` | Should the phenotypes be quantile normalised? <details><summary>Help</summary><small>Forces phenotypes to a N(0, 1) distribution.</small></details>| `boolean` |  |  |  |
-| `standardise` | Should the phenotypes be mean-centered and variance-scaled? | `boolean` |  |  |  |
-| `null_model_formula` | R-style formula for the outer model that you want to use as a baseline. <details><summary>Help</summary><small>A string like 'y ~ cov1'. Here 'y' can be used to refer to the phenotype, and 'x' can be used to refer to the genotype. Column names in `covar` and `qcovar` can also be used. See https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula for more information on R formulas.</small></details>| `string` |  | True |  |
-| `model_formula` | R-style formula for the nested model that includes the variable of interest <details><summary>Help</summary><small>Similar to `null_model_formula`. Must contain all the terms in `null_model_formula` plus at least an extra one. You can also include GxE terms (es. 'y ~ x + x:cov1 + cov1'), and dominance terms ('y ~ x + I(x == 1) + cov1'). Arithmetic operations such as 'I(x == 1)' must be encapsulated in I() for proper evaluation.</small></details>| `string` |  | True |  |
-| `permutations` | Number of permutations to be performed | `integer` | 10 |  |  |
-| `permute_by` | Perform permutation within pre-defined groups <details><summary>Help</summary><small>Must be a column name in `covar`. If specified, samples are exchaged in permutations only within the levels of the specified factor.</small></details>| `string` |  |  |  |
-| `p_thr` | Nominal significance threshold | `number` | 0.05 |  |  |
+| `genome` | Name of iGenomes reference. <details><summary>Help</summary><small>If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. <br><br>See the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.</small></details>| `string` |  |  |  |
+| `fasta` | Path to FASTA genome file. <details><summary>Help</summary><small>This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.</small></details>| `string` |  |  |  |
+| `igenomes_base` | Directory / URL base for iGenomes references. | `string` | s3://ngi-igenomes/igenomes |  |  |
+| `igenomes_ignore` | Do not load the iGenomes reference config. <details><summary>Help</summary><small>Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.</small></details>| `boolean` |  |  |  |
+
+## ENSEMBL VEP Options
+
+Information needed for predicting variant effects with VEP
+
+| Parameter | Description | Type | Default | Required | Hidden |
+|-----------|-----------|-----------|-----------|-----------|-----------|
+| `vep_genome` | VEP genome | `string` |  | True |  |
+| `vep_species` | VEP species | `string` |  | True |  |
+| `vep_cache_version` | VEP cache version | `string` |  | True |  |
 
 ## Institutional config options
 
