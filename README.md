@@ -17,19 +17,12 @@ This would allow to discover for example frameshifts and other mutations with la
 
 ![birneylab/varexplore_metro_map](docs/images/birneylab_varexplore_drawing.png)
 
-<!-- 1. Convert vcf genotypes to `pgen` format ([`plink2`](https://www.cog-genomics.org/plink/2.0/))
-1. Compute the relatedness matrix for the whole genome and each LOCO subset ([`plink2`](https://www.cog-genomics.org/plink/2.0/))
-1. Verify that the statistical model specified is nested in the null model ([`R language`](https://www.r-project.org/))
-1. Estimate variance components using the null model fixed effects and the relatedness matrix ([`gaston`](https://cran.r-project.org/web/packages/gaston/index.html))
-1. Compute the Cholesky decomposition of the phenotype variance-covariance matrix ([`R language`](https://www.r-project.org/))
-1. Remove the covariance structure from the phenotypes and fixed effect covariates ([`R language`](https://www.r-project.org/))
-1. Fit the null and complete models for each SNP, and compute a _p_-value using a likelyhood ratio test ([`R language`](https://www.r-project.org/))
-1. Fit the model and compute _p_-values for each permutation of the genotypes ([`R language`](https://www.r-project.org/))
-1. Compute the significance threshold using the Westfall–Young minP approach ([`R language`](https://www.r-project.org/))
-1. Make the final plots ([`ggplot2`](https://ggplot2.tidyverse.org/)):
-   - Manhattan plot of the associations
-   - Quantile-quantile plots
-   - Heatmap of the relatedness matrices ([`ComplexHeatmap`](https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html)) -->
+1. Group samples according to the genotypes at the selected markers ([`bcftools`](https://samtools.github.io/bcftools/bcftools.html))
+1. Extract a user-defined region from the sequencing files around the variant of interest ([`samtools`](http://www.htslib.org/doc/samtools.html))
+1. Merge the sequencing files from samples with the same genotype at the variant of interest ([`samtools`](http://www.htslib.org/doc/samtools.html))
+1. Edit the SM tags of the sequencing files so that they are seen as a single sample ([`samtools`](http://www.htslib.org/doc/samtools.html))
+1. Joint call variants in the meta-samples for each vairant of interest ([`gatk4`](https://gatk.broadinstitute.org/hc/en-us))
+1. Predict variant effects ([`ENSEMBL VEP`](https://www.ensembl.org/info/docs/tools/vep/index.html))
 
 ## Integration with [birneylab/stitchimpute](https://github.com/birneylab/stitchimpute)
 
@@ -49,18 +42,13 @@ Always use this profile when working with medaka samples.
 > to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline)
 > with `-profile test` before running the workflow on actual data.
 
-Since just a few files are required to run this pipeline, differently from other pipelines a samplesheet is not used.
-Instead, the required files are all specified with dedicated parameters.
-
 You can run the pipeline using:
 
 ```bash
-nextflow run birneylab/flexlmm \
+nextflow run birneylab/varexplore \
    -profile <docker/singularity/.../institute> \
    --vcf input.vcf.gz \
-   --pheno input.pheno \
-   --model_formula 'y ~ x' \
-   --null_model_formula 'y ~ 1' \
+   --genome 
    --outdir <OUTDIR>
 ```
 
