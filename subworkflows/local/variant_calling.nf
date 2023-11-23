@@ -55,8 +55,6 @@ workflow VARIANT_CALLING {
     .map { sample_annot ->  [ [ id: sample_annot.simpleName ], sample_annot ] }
     .set { sample_annotations }
     PUBLISH_SAMPLE_ANNOT ( sample_annotations )
-    PUBLISH_SAMPLE_ANNOT.out.file_out
-    .view()
 
     versions = versions.mix( GATK4_HAPLOTYPECALLER .out.versions )
     versions = versions.mix( GATK4_GENOMICSDBIMPORT.out.versions )
@@ -64,7 +62,8 @@ workflow VARIANT_CALLING {
     versions = versions.mix( PUBLISH_SAMPLE_ANNOT  .out.versions )
 
     emit:
-    vcf       // channel: [ meta, vcf, tbi ]
+    vcf          // channel: [ meta, vcf, tbi ]
+    sample_annot // channel: [ meta, tsv ]
 
     versions  // channel: [ versions.yml ]
 }
