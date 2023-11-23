@@ -53,8 +53,8 @@ workflow VARIANT_CALLING {
         ]
     }
     .map { sample_annot ->  [ [ id: sample_annot.simpleName ], sample_annot ] }
-    .set { sample_annotations }
-    PUBLISH_SAMPLE_ANNOT ( sample_annotations )
+    .set { sample_annot }
+    PUBLISH_SAMPLE_ANNOT ( sample_annot )
 
     versions = versions.mix( GATK4_HAPLOTYPECALLER .out.versions )
     versions = versions.mix( GATK4_GENOMICSDBIMPORT.out.versions )
