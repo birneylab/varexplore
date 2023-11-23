@@ -1,6 +1,7 @@
-include { GATK4_HAPLOTYPECALLER  } from '../../modules/nf-core/gatk4/haplotypecaller'
-include { GATK4_GENOMICSDBIMPORT } from '../../modules/nf-core/gatk4/genomicsdbimport'
-include { GATK4_GENOTYPEGVCFS    } from '../../modules/nf-core/gatk4/genotypegvcfs'
+include { GATK4_HAPLOTYPECALLER           } from '../../modules/nf-core/gatk4/haplotypecaller'
+include { GATK4_GENOMICSDBIMPORT          } from '../../modules/nf-core/gatk4/genomicsdbimport'
+include { GATK4_GENOTYPEGVCFS             } from '../../modules/nf-core/gatk4/genotypegvcfs'
+include { CAT_CAT as PUBLISH_SAMPLE_ANNOT } from '../../modules/nf-core/cat/cat'
 
 workflow VARIANT_CALLING {
     take:
@@ -42,9 +43,25 @@ workflow VARIANT_CALLING {
     .join ( GATK4_GENOTYPEGVCFS.out.tbi, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .set { vcf }
 
+    merged_crams
+    .collectFile ( keepHeader: true, skip: 1, sort: true ) {
+        meta, cram, crai ->
+        [
+            "variant_${meta.variant}.sample_annotations.collectFile.tsv",
+            "sample\tgroup\tgenotype\n" +
+            [ meta.id, meta.group, meta.gt ].join("\t") + "\n"
+        ]
+    }
+    .map { sample_annot ->  [ [ id: sample_annot.simpleName ], sample_annot ] }
+    .set { sample_annotations }
+    PUBLISH_SAMPLE_ANNOT ( sample_annotations )
+    PUBLISH_SAMPLE_ANNOT.out.file_out
+    .view()
+
     versions = versions.mix( GATK4_HAPLOTYPECALLER .out.versions )
     versions = versions.mix( GATK4_GENOMICSDBIMPORT.out.versions )
     versions = versions.mix( GATK4_GENOTYPEGVCFS   .out.versions )
+    versions = versions.mix( PUBLISH_SAMPLE_ANNOT  .out.versions )
 
     emit:
     vcf       // channel: [ meta, vcf, tbi ]
