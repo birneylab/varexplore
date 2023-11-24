@@ -1,5 +1,6 @@
 include { ENSEMBLVEP_DOWNLOAD } from '../../modules/nf-core/ensemblvep/download'
 include { ENSEMBLVEP_VEP      } from '../../modules/nf-core/ensemblvep/vep'
+include { FORMAT_VEP_OUTPUT   } from '../../modules/local/format_vep_output'
 
 workflow PREDICT_EFFECTS {
     take:
@@ -26,9 +27,11 @@ workflow PREDICT_EFFECTS {
         fasta,
         [],
     )
+    FORMAT_VEP_OUTPUT ( ENSEMBLVEP_VEP.out.tab )
 
     versions = versions.mix( ENSEMBLVEP_DOWNLOAD.out.versions )
     versions = versions.mix( ENSEMBLVEP_VEP     .out.versions )
+    versions = versions.mix( FORMAT_VEP_OUTPUT  .out.versions )
 
     emit:
 
