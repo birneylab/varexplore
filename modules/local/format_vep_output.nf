@@ -48,6 +48,7 @@ process FORMAT_VEP_OUTPUT {
         position_protein = df_in[["Protein_position"]],
         aa_change = df_in[["Amino_acids"]],
         codon_change = df_in[["Codons"]],
+        variant_id = df_in[["Uploaded_variation"]],
         sample_zygosity = df_in[["ZYG"]]
     )
     df_out[["end"]] <- ifelse(
