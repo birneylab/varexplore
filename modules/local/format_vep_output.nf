@@ -27,10 +27,15 @@ process FORMAT_VEP_OUTPUT {
     clean_lines <- clean_lines[clean_lines != ""]
     clean_lines[1] <- sub("^#", "", clean_lines[1])
     df_in <- read.table(text = clean_lines, sep = "\\t", header = TRUE)
+    df_in[["Location"]] <- ifelse(
+        grepl("^.*:.*-.*\$", df_in[["Location"]]),
+        df_in[["Location"]],
+        sub("(.*):(.*)", "\\\\1:\\\\2-\\\\2", df_in[["Location"]])
+    )
     df_out <- data.frame(
         chr = sub("(.*):(.*)-(.*)", "\\\\1", df_in[["Location"]]),
-        start = sub("(.*):(.*)-(.*)", "\\\\2", df_in[["Location"]]),
-        end = sub("(.*):(.*)-(.*)", "\\\\3", df_in[["Location"]]),
+        start = as.numeric(sub("(.*):(.*)-(.*)", "\\\\2", df_in[["Location"]])),
+        end = as.numeric(sub("(.*):(.*)-(.*)", "\\\\3", df_in[["Location"]])),
         patient = df_in[["IND"]],
         type = df_in[["Consequence"]],
         ref = df_in[["REF_ALLELE"]],
@@ -42,13 +47,22 @@ process FORMAT_VEP_OUTPUT {
         trembl = df_in[["TREMBL"]],
         uniparc = df_in[["UNIPARC"]],
         exon = df_in[["EXON"]],
-        position_cdna = df_in[["Position.in.cDNA"]],
-        position_cds = df_in[["Position.in.CDS"]],
-        position_protein = df_in[["Position.in.protein"]],
-        aa_change = df_in[["Amino.acid.change"]],
-        codon_change = df_in[["Codon.change"]],
+        position_cdna = df_in[["cDNA_position"]],
+        position_cds = df_in[["CDS_position"]],
+        position_protein = df_in[["Protein_position"]],
+        aa_change = df_in[["Amino_acids"]],
+        codon_change = df_in[["Codons"]],
         sample_zygosity = df_in[["ZYG"]]
     )
+    df_out[["end"]] <- ifelse(
+        df_out[["end"]] > df_out[["start"]],
+        df_out[["end"]],
+    ifelse(
+        df_out[["end"]] == df_out[["start"]],
+        df_out[["end"]] + 1,
+        NA
+    ))
+    stopifnot(all(df_out[["end"]] > df_out[["start"]]))
     write.table(df_out, gzfile("${prefix}.mut.gz"), sep = "\\t", row.names = FALSE, quote = FALSE)
 
     ver_r <- strsplit(as.character(R.version["version.string"]), " ")[[1]][3]
