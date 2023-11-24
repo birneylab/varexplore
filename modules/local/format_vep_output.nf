@@ -32,12 +32,14 @@ process FORMAT_VEP_OUTPUT {
         df_in[["Location"]],
         sub("(.*):(.*)", "\\\\1:\\\\2-\\\\2", df_in[["Location"]])
     )
+    df_in <- df_in[df_in[["ZYG"]] != "HOMREF",]
     df_out <- data.frame(
         chr = sub("(.*):(.*)-(.*)", "\\\\1", df_in[["Location"]]),
         start = as.numeric(sub("(.*):(.*)-(.*)", "\\\\2", df_in[["Location"]])),
         end = as.numeric(sub("(.*):(.*)-(.*)", "\\\\3", df_in[["Location"]])),
         sample = df_in[["IND"]],
-        type = df_in[["Consequence"]],
+        impact = df_in[["IMPACT"]],
+        consequence = df_in[["Consequence"]],
         ref = df_in[["REF_ALLELE"]],
         alt = df_in[["Allele"]],
         gene = df_in[["Gene"]],
