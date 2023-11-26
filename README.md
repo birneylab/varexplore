@@ -44,24 +44,24 @@ Then, in `--variant_table` refer to the variants of interest using the same nami
 
 ## Visualising the results
 
-The files `<OUTDIR>/variants/variant_<CHR>_<POS>_<REF>_<ALT>/variant_<CHR>_<POS>_<REF>_<ALT>.mut.gz` containing variant consequences can be directly loaded in [IGV](https://igv.org/) for visualisation. They variants will be coloured according to the ENSEMBL VEP impact ("MODIFIER", "LOW", "MODERATE", "HIGH").
+The files `<OUTDIR>/variants/variant_<ID>/variant_<ID>.mut.gz` containing variant consequences can be directly loaded in [IGV](https://igv.org/) for visualisation. They variants will be coloured according to the ENSEMBL VEP impact ("MODIFIER", "LOW", "MODERATE", "HIGH").
 
 ## Filtering variants
 The script `utilities/filter_variants.R` can be used as a stand-alone tool to filter variants and ENSEMBL VEP predictions produced by this pipeline according to their allele distribution in different samples. This is useful for example when certain samples should be excluded, or when only variants that have the same genotype in a group of samples and a different genotype in another group of samples should be retained.
 
-It should be run in the folder `<OUTDIR>/variants/variant_<CHR>_<POS>_<REF>_<ALT>` for the grouping variant of interest.
+It should be run in the folder `<OUTDIR>/variants/variant_<ID>` for the grouping variant of interest.
 Assuming that the script has been downloaded to the current directory as `filter_variants.R` one can run it as follows:
 
 ```bash
 filter_variants.R \
-   --vcf variant_<CHR>_<POS>_<REF>_<ALT>.vcf.gz \
-   --mut variant_<CHR>_<POS>_<REF>_<ALT>.mut.gz \
+   --vcf variant_<ID>.vcf.gz \
+   --mut variant_<ID>.mut.gz \
    --hom1 hom1_samples.txt \
    --hom2 hom2_samples.txt \
    --drop samples_to_drop.txt
 ```
 
-The files `hom1_samples.txt`, `hom2_samples.txt`, and `samples_to_drop.txt` contain one sample name per line, matching the sample names in the vcf file given in input to the script (those can be obtained running `bcftools query -l variant_<CHR>_<POS>_<REF>_<ALT>.vcf.gz`).
+The files `hom1_samples.txt`, `hom2_samples.txt`, and `samples_to_drop.txt` contain one sample name per line, matching the sample names in the vcf file given in input to the script (those can be obtained running `bcftools query -l variant_<ID>.vcf.gz`).
 The samples in the file given to the `--drop` argument are excluded from the output.
 
 Variants are retained only if they satisfy all of the following conditions:
