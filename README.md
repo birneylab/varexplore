@@ -71,8 +71,6 @@ Variants are retained only if they satisfy all of the following conditions:
 
 The filtered set of variants is written to a new VCF file `variants_filtered.vcf.gz`. The filtered set of variant consequences is written to a new TSV file `variants_filtered.mut.gz`. The basename of the output can be customised using the `--outname` flag.
 
-This filtering is especially useful for browsing variants of interest with [IGV](https://igv.org/).
-
 ## Birneylab-specific information
 
 For ease of use, the ideal settings for stitch for medaka samples have been specified in a profile called `medaka`.
