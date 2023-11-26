@@ -44,7 +44,7 @@ Then, in `--variant_table` refer to the variants of interest using the same nami
 
 ## Visualising the results
 
-The files `<OUTDIR>/variants/variant_<CHR>_<POS>_<REF>_<ALT>/variant_<CHR>_<POS>_<REF>_<ALT>.mut.gz` containing variant consequences can be directly loaded in [IGV](https://igv.org/) for visualisation.
+The files `<OUTDIR>/variants/variant_<CHR>_<POS>_<REF>_<ALT>/variant_<CHR>_<POS>_<REF>_<ALT>.mut.gz` containing variant consequences can be directly loaded in [IGV](https://igv.org/) for visualisation. They variants will be coloured according to the ENSEMBL VEP impact ("MODIFIER", "LOW", "MODERATE", "HIGH").
 
 ## Filtering variants
 The script `utilities/filter_variants.R` can be used as a stand-alone tool to filter variants and ENSEMBL VEP predictions produced by this pipeline according to their allele distribution in different samples. This is useful for example when certain samples should be excluded, or when only variants that have the same genotype in a group of samples and a different genotype in another group of samples should be retained.
