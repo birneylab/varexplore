@@ -42,6 +42,37 @@ Then, in `--variant_table` refer to the variants of interest using the same nami
 1_123_A_T
 ```
 
+## Visualising the results
+
+The files `<OUTDIR>/variants/variant_<CHR>_<POS>_<REF>_<ALT>/variant_<CHR>_<POS>_<REF>_<ALT>.mut.gz` containing variant consequences can be directly loaded in [IGV](https://igv.org/) for visualisation.
+
+## Filtering variants
+The script `utilities/filter_variants.R` can be used as a stand-alone tool to filter variants and ENSEMBL VEP predictions produced by this pipeline according to their allele distribution in different samples. This is useful for example when certain samples should be excluded, or when only variants that have the same genotype in a group of samples and a different genotype in another group of samples should be retained.
+
+It should be run in the folder `<OUTDIR>/variants/variant_<CHR>_<POS>_<REF>_<ALT>` for the grouping variant of interest.
+Assuming that the script has been downloaded to the current directory as `filter_variants.R` one can run it as follows:
+
+```bash
+filter_variants.R \
+   --vcf variant_<CHR>_<POS>_<REF>_<ALT>.vcf.gz \
+   --mut variant_<CHR>_<POS>_<REF>_<ALT>.mut.gz \
+   --hom1 hom1_samples.txt \
+   --hom2 hom2_samples.txt \
+   --drop samples_to_drop.txt
+```
+
+The files `hom1_samples.txt`, `hom2_samples.txt`, and `samples_to_drop.txt` contain one sample name per line, matching the sample names in the vcf file given in input to the script (those can be obtained running `bcftools query -l variant_<CHR>_<POS>_<REF>_<ALT>.vcf.gz`).
+The samples in the file given to the `--drop` argument are excluded from the output.
+
+Variants are retained only if they satisfy all of the following conditions:
+- fully homozygous and with the same homozygous genotype in all the `--hom1` samples
+- fully homozygous and with the same homozygous genotype in all the `--hom2` samples
+- with the genotypes in `--hom1` and `--hom2` samples being not identical
+
+The filtered set of variants is written to a new VCF file `variants_filtered.vcf.gz`. The filtered set of variant consequences is written to a new TSV file `variants_filtered.mut.gz`. The basename of the output can be customised using the `--outname` flag.
+
+This filtering is especially useful for browsing variants of interest with [IGV](https://igv.org/).
+
 ## Birneylab-specific information
 
 For ease of use, the ideal settings for stitch for medaka samples have been specified in a profile called `medaka`.
