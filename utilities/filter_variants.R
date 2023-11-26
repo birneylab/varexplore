@@ -39,7 +39,7 @@ library("tidyverse")
 if (!is.null(opt[["outname"]])){
   outname <- opt[["outname"]]
 } else {
-  outname <- "filtered"
+  outname <- "filtered_variants"
 }
 
 vcf <- read.vcfR(opt[["vcf"]], verbose = FALSE)
@@ -100,6 +100,21 @@ df <- full_join(df, sample_spec, by = "sample") %>%
   arrange(key)
 
 vars_to_keep <- df %>% pull(unique(key))
-
 vcf_filtered <- vcf[vars_to_keep, samples_to_keep]
 write.vcf(vcf_filtered, sprintf("%s.vcf.gz", outname))
+
+if (is.null(opt[["mut"]])) quit(status = 0)
+
+vars_to_keep_ids <- tibble(
+  # ids are chr_pos
+  id = rownames(extract.gt(vcf_filtered))
+)
+sample_names_to_keep <- tibble(
+  sample = colnames(extract.gt(vcf_filtered))
+)
+mut <- read_tsv(opt[["mut"]]) %>%
+  mutate(id = sprintf("%s_%s", chr, as.integer(start))) %>%
+  inner_join(vars_to_keep_ids) %>%
+  inner_join(sample_names_to_keep)
+
+write_tsv(mut, sprintf("%s.mut.gz", outname))
