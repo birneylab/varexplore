@@ -47,8 +47,9 @@ Use ENSEMBL VEP on the variant calls obtained in the previous step to determine 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `ensembl_vep/variant_<VARIANT_ID>/`
-  - `*.vep.vcf.gz`: variant calls with consequence annotated in the `INFO/CSQ` field
+- `variants/variant_<VARIANT_ID>/`
+  - `*.vep.tsv.gz`: variant consequence predictions
+  - `*.mut.gz`: variant consequence formatted in such a way that they can be directly loaded in [IGV](https://www.igv.org)
   - `*.vep.summary.html`: html report from VEP
 
 </details>
