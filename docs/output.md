@@ -49,7 +49,7 @@ Use ENSEMBL VEP on the variant calls obtained in the previous step to determine 
 
 - `variants/variant_<VARIANT_ID>/`
   - `*.vep.tsv.gz`: variant consequence predictions
-  - `*.mut.gz`: variant consequence formatted in such a way that they can be directly loaded in [IGV](https://www.igv.org)
+  - `*.mut.gz`: variant consequences formatted in such a way that they can be directly loaded in [IGV](https://www.igv.org)
   - `*.vep.summary.html`: html report from VEP
 
 </details>
