@@ -51,7 +51,7 @@ df <- extract_gt_tidy(
   gt_column_prepend = NULL,
   verbose = TRUE
 ) %>%
-  summarise(
+  reframe(
     key = Key,
     sample = Indiv,
     gt = str_replace(GT, "\\|", "/"),
