@@ -1,6 +1,6 @@
 include { SAMTOOLS_VIEW as FILTER_CRAM            } from '../../modules/nf-core/samtools/view'
 include { SAMTOOLS_MERGE                          } from '../../modules/nf-core/samtools/merge'
-include { BCFTOOLS_INDEX                          } from '../../modules/nf-core/bcftools/index'
+include { BCFTOOLS_INDEX as INDEX_INPUT_VCF       } from '../../modules/nf-core/bcftools/index'
 include { BCFTOOLS_QUERY as EXTRACT_SAMPLES_BY_GT } from '../../modules/nf-core/bcftools/query'
 include { BCFTOOLS_QUERY as EXTRACT_POSSIBLE_GT   } from '../../modules/nf-core/bcftools/query'
 include { SAMTOOLS_REHEADER as RENAME_SM_TAG      } from '../../modules/nf-core/samtools/reheader'  
@@ -24,9 +24,9 @@ workflow PREPROCESSING {
     .map { group, samples -> [ group, samples.join(",") ] }
     .set { samples_per_group }
 
-    BCFTOOLS_INDEX ( vcf )
+    INDEX_INPUT_VCF ( vcf )
     Channel.value ( vcf )
-    .join ( BCFTOOLS_INDEX.out.csi, by: 0, failOnDuplicate: true, failOnMismatch: true )
+    .join ( INDEX_INPUT_VCF.out.csi, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .combine ( samples_per_group )
     .combine ( vars )
     .map {
@@ -133,7 +133,7 @@ workflow PREPROCESSING {
     fa_fai.mix ( fa_gzi ).collect().set { fa_idx }
     SAMTOOLS_DICT .out.dict.map { meta, dict -> dict }.set { fa_dict }
 
-    versions = versions.mix( BCFTOOLS_INDEX       .out.versions )
+    versions = versions.mix( INDEX_INPUT_VCF      .out.versions )
     versions = versions.mix( EXTRACT_POSSIBLE_GT  .out.versions )
     versions = versions.mix( EXTRACT_SAMPLES_BY_GT.out.versions )
     versions = versions.mix( FILTER_CRAM          .out.versions )

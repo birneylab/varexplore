@@ -107,13 +107,12 @@ if (is.null(opt[["mut"]])) quit(status = 0)
 
 vars_to_keep_ids <- tibble(
   # ids are chr_pos
-  id = rownames(extract.gt(vcf_filtered))
+  id = rownames(extract.gt(vcf_filtered, IDtoRowNames = TRUE))
 )
 sample_names_to_keep <- tibble(
   sample = colnames(extract.gt(vcf_filtered))
 )
 mut <- read_tsv(opt[["mut"]]) %>%
-  mutate(id = sprintf("%s_%s", chr, as.integer(start))) %>%
   inner_join(vars_to_keep_ids) %>%
   inner_join(sample_names_to_keep)
 

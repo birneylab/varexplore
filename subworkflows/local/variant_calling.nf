@@ -1,7 +1,9 @@
-include { GATK4_HAPLOTYPECALLER           } from '../../modules/nf-core/gatk4/haplotypecaller'
-include { GATK4_GENOMICSDBIMPORT          } from '../../modules/nf-core/gatk4/genomicsdbimport'
-include { GATK4_GENOTYPEGVCFS             } from '../../modules/nf-core/gatk4/genotypegvcfs'
-include { CAT_CAT as PUBLISH_SAMPLE_ANNOT } from '../../modules/nf-core/cat/cat'
+include { GATK4_HAPLOTYPECALLER              } from '../../modules/nf-core/gatk4/haplotypecaller'
+include { GATK4_GENOMICSDBIMPORT             } from '../../modules/nf-core/gatk4/genomicsdbimport'
+include { GATK4_GENOTYPEGVCFS                } from '../../modules/nf-core/gatk4/genotypegvcfs'
+include { BCFTOOLS_ANNOTATE                  } from '../../modules/nf-core/bcftools/annotate'
+include { BCFTOOLS_INDEX as INDEX_OUTPUT_VCF } from '../../modules/nf-core/bcftools/index'
+include { CAT_CAT as PUBLISH_SAMPLE_ANNOT    } from '../../modules/nf-core/cat/cat'
 
 workflow VARIANT_CALLING {
     take:
@@ -41,6 +43,12 @@ workflow VARIANT_CALLING {
     GATK4_GENOTYPEGVCFS(genotype_input, fasta[1], fa_idx, fa_dict, [], [] )
     GATK4_GENOTYPEGVCFS.out.vcf
     .join ( GATK4_GENOTYPEGVCFS.out.tbi, by: 0, failOnDuplicate: true, failOnMismatch: true )
+    .map { meta, vcf, csi -> [ meta, vcf, csi, [], [], [] ] }
+    .set { annotate_input }
+    BCFTOOLS_ANNOTATE ( annotate_input )
+    INDEX_OUTPUT_VCF ( BCFTOOLS_ANNOTATE.out.vcf )
+    BCFTOOLS_ANNOTATE.out.vcf
+    .join ( INDEX_OUTPUT_VCF.out.tbi, by: 0, failOnDuplicate: true, failOnMismatch: true )
     .set { vcf }
 
     merged_crams
