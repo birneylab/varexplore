@@ -34,12 +34,12 @@ process FORMAT_VEP_OUTPUT {
     )
     df_in <- df_in[df_in[["ZYG"]] != "HOMREF",]
     df_out <- data.frame(
-        id = df_in[["Uploaded_variation"]],
         chr = sub("(.*):(.*)-(.*)", "\\\\1", df_in[["Location"]]),
         start = as.numeric(sub("(.*):(.*)-(.*)", "\\\\2", df_in[["Location"]])),
         end = as.numeric(sub("(.*):(.*)-(.*)", "\\\\3", df_in[["Location"]])),
         sample = df_in[["IND"]],
         impact = df_in[["IMPACT"]],
+        id = df_in[["Uploaded_variation"]],
         consequence = df_in[["Consequence"]],
         ref = df_in[["REF_ALLELE"]],
         alt = df_in[["Allele"]],
