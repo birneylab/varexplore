@@ -162,6 +162,7 @@ if (!is.null(opt[["hom2"]]) && !is.null(opt[["hom1"]])) {
       key,
       allele_hom,
     ) %>%
+    distinct() %>%
     pivot_wider(
       id_cols = key,
       names_from = type,
