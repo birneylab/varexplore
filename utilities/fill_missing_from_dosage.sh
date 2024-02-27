@@ -28,5 +28,3 @@ plink2 \
   --psam tmp.psam
   --pvar tmp.var.zst
   --export vcf bgz
-
-rm tmp.*
