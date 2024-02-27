@@ -24,7 +24,7 @@ plink2 \
   --threads $N_CPU \
   --out "$(basename $VCF).no_missing"\
   --chr-set $N_CHR \
-  --pgen tmp.pgen
-  --psam tmp.psam
-  --pvar tmp.var.zst
+  --pgen tmp.pgen \
+  --psam tmp.psam \
+  --pvar tmp.var.zst \
   --export vcf bgz
