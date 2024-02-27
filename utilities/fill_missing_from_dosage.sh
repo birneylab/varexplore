@@ -9,8 +9,17 @@ VCF="$1" # vcf from the command line
 DOSAGE_FIELD="DS"
 
 plink2 \
-  --out "$(basename $VCF).no_missing"\
+  --out tmp \
   --chr-set 24 \
   --vcf $VCF dosage=$DOSAGE_FIELD \
-  --make-pgen vzs fill-missing-from-dosage erase-dosage \
+  --make-pgen vzs fill-missing-from-dosage erase-dosage
+
+plink2 \
+  --out "$(basename $VCF).no_missing"\
+  --chr-set 24 \
+  --pgen tmp.pgen
+  --psam tmp.psam
+  --pvar tmp.var.zst
   --export vcf bgz
+
+rm tmp.*
