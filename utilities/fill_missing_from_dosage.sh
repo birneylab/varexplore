@@ -1,4 +1,5 @@
 #!/bin/bash
+# Author: Saul Pierotti, Birney reasearch, European Bioinformatics Institute
 
 # Fills missing genotype calls in a VCF file from the DS field using a back and forth conversion with plink2
 # Useful for the output from the birneylab/stitchimpute pipeline
