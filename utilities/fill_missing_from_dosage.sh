@@ -9,21 +9,21 @@ N_CHR=24 # 24 for medaka
 VCF="$1" # vcf from the command line
 DOSAGE_FIELD="DS"
 MEM="10000"
-NCPU="10"
+N_CPU="10"
 
 plink2 \
   --memory $MEM \
-  --threads $NCPU \
+  --threads $N_CPU \
   --out tmp \
-  --chr-set 24 \
+  --chr-set $N_CHR \
   --vcf $VCF dosage=$DOSAGE_FIELD \
   --make-pgen vzs fill-missing-from-dosage erase-dosage
 
 plink2 \
   --memory $MEM \
-  --threads $NCPU \
+  --threads $N_CPU \
   --out "$(basename $VCF).no_missing"\
-  --chr-set 24 \
+  --chr-set $N_CHR \
   --pgen tmp.pgen
   --psam tmp.psam
   --pvar tmp.var.zst
