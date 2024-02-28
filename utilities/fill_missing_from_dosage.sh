@@ -22,7 +22,7 @@ plink2 \
 plink2 \
   --memory $MEM \
   --threads $N_CPU \
-  --out "$(basename $VCF).no_missing"\
+  --out "$(basename $VCF|sed -E 's/\.[vb]cf(\.gz)?$//').no_missing" \
   --chr-set $N_CHR \
   --pgen tmp.pgen \
   --psam tmp.psam \
