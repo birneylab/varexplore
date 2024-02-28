@@ -26,5 +26,5 @@ plink2 \
   --chr-set $N_CHR \
   --pgen tmp.pgen \
   --psam tmp.psam \
-  --pvar tmp.var.zst \
+  --pvar tmp.pvar.zst \
   --export vcf bgz
